@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script src="../csstween.js"></script>
+    <style>
+        body{
+            background: #000;
+            font-size: 14px;
+        }
+        #box{
+            width: 100px;
+            height: 100px;
+            background: #aa4466;
+        }
+    </style>
+    <style>
+        @keyframes pulse {
+            0% {
+                background-color: #aa4466;
+            }
+
+            100% {
+                background-color: #aaddee;
+            }
+        }
+
+        @-webkit-keyframes pulse {
+            0% {
+                background-color: #aa4466;
+            }
+
+            100% {
+                background-color: #aaddee;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    CssTween.to(document.getElementById('box'), 1, {'width':'500px', ease:'strong', onComplete:function(){
+        console.log("complete");
+    }});
+</script>
+<div id="box"></div>
+</body>
+</html>
