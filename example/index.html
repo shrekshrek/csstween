@@ -36,12 +36,11 @@
     </style>
 </head>
 <body>
-
+<div id="box"></div>
 <script>
     CssTween.to(document.getElementById('box'), 1, {'width':'500px', ease:'strong', onComplete:function(){
         console.log("complete");
     }});
 </script>
-<div id="box"></div>
 </body>
 </html>
