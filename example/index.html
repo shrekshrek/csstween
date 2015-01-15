@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <script src="../csstween.js"></script>
+    <script src="../csstween.min.js"></script>
     <style>
         body{
             background: #000;
@@ -11,6 +11,10 @@
             width: 100px;
             height: 100px;
             background: #aa4466;
+        }
+        .move{
+            transition: all 2s ease-out;
+            margin-top: 150px;
         }
     </style>
     <style>
@@ -36,11 +40,25 @@
     </style>
 </head>
 <body>
-<div id="box"></div>
+
+<div class="b1">
+    <div id="box">
+    </div>
+</div>
 <script>
-    CssTween.to(document.getElementById('box'), 1, {'width':'500px', ease:'strong', onComplete:function(){
+    CssTween.fromTo('.b1 #box', 1, {marginTop:300}, {marginTop:200, ease:'strong', onComplete:function(){
         console.log("complete");
     }});
+    setTimeout(function(){
+        CssTween.kill('.b1 #box');
+        CssTween.fromTo('.b1 #box', 1, {marginTop:50}, {marginTop:100, ease:'strong', onComplete:function(){
+            console.log("complete2");
+            CssTween.fromTo('.b1 #box', 1, {marginTop:400}, {marginTop:500, ease:'strong', onComplete:function(){
+                console.log("complete3");
+            }});
+        }});
+    }, 500);
+
 </script>
 </body>
 </html>
