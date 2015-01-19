@@ -1,7 +1,7 @@
 /*!
  * VERSION: 0.1.0
  * DATE: 2015-01-09
- * GIT:https://github.com/shrekshrek/css3animation
+ * GIT:https://github.com/shrekshrek/csstween
  *
  * @author: Shrek.wang, shrekshrek@gmail.com
  **/
