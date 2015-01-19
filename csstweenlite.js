@@ -9,63 +9,103 @@
 (function(root, factory) {
     if (typeof define === 'function' && define.amd) {
         define(['exports'], function(exports) {
-            root.CssTween = factory(root, exports);
+            root.CTL = root.CssTweenLite = factory(root, exports);
         });
     } else if (typeof exports !== 'undefined') {
         factory(root, exports);
     } else {
-        root.CssTween = factory(root, {});
+        root.CTL = root.CssTweenLite = factory(root, {});
     }
 
-}(this, function(root, CssTween) {
+}(this, function(root, CTL) {
 
-    var previousCssTweeen = root.CssTween;
+    var previousCssTweeen = root.CTL;
 
-    CssTween.VERSION = '0.1.0';
+    CTL.VERSION = '0.1.0';
 
-    CssTween.noConflict = function() {
-        root.CssTween = previousCssTweeen;
+    CTL.noConflict = function() {
+        root.CTL = previousCssTweeen;
         return this;
     };
 
     // --------------------------------------------------------------------extend
-    CssTween.extend = function(obj) {
+    CTL.extend = function(obj) {
         for (var prop in obj) {
-            CssTween[prop] = obj[prop];
+            this[prop] = obj[prop];
         }
     };
 
-
     // --------------------------------------------------------------------全局属性
-    CssTween._isSupported = false;
-    CssTween._browserPrefix = "webkit";
+    var _isSupported = false;
+    var _browserPrefix = "webkit";
 
-    CssTween.checkSupport = function() {
+    CTL.checkSupport = function() {
         var _d = document.createElement("div"), _prefixes = ["", "webkit", "Moz", "O", "ms"], _len = _prefixes.length, i;
 
         for ( i = 0; i < _len; i++) {
             if ((_prefixes[i] + "Animation") in _d.style) {
-                CssTween._isSupported = true;
-                CssTween._browserPrefix = _prefixes[i];
+                _isSupported = true;
+                _browserPrefix = _prefixes[i];
                 return true;
             }
         }
         return false;
     };
 
-    CssTween.browserPrefix = function(str) {
+    CTL.browserPrefix = function(str) {
         if (arguments.length) {
-            return CssTween._browserPrefix + str;
+            return _browserPrefix + str;
         } else {
-            return CssTween._browserPrefix;
+            return _browserPrefix;
         }
     };
 
-    // --------------------------------------------------------------------辅助方法
-    CssTween.animations = {};
-    CssTween.extend({
+    // --------------------------------------------------------------------缓动选项
+    CTL.extend({
+        Linear: {
+            easeIn:'(0, 0, 1, 1)',
+            easeOut:'(0, 0, 1, 1)',
+            easeInOut:'(0, 0, 1, 1)'
+        },
+        Sine: {
+            easeIn:'(0.35, 0, 1, 1)',
+            easeOut:'(0, 0, 0.65, 1)',
+            easeInOut:'(0.35, 0, 0.65, 1)'
+        },
+        Quad: {
+            easeIn:'(0.45, 0, 1, 1)',
+            easeOut:'(0, 0, 0.55, 1)',
+            easeInOut:'(0.45, 0, 0.55, 1)'
+        },
+        Quart: {
+            easeIn:'(0.75, 0, 1, 1)',
+            easeOut:'(0, 0, 0.25, 1)',
+            easeInOut:'(0.75, 0, 0.25, 1)'
+        },
+        Expo: {
+            easeIn:'(1, 0, 1, 1)',
+            easeOut:'(0, 0, 0, 1)',
+            easeInOut:'(1, 0, 0, 1)'
+        }
+    });
+
+    // --------------------------------------------------------------------主要方法
+    var _requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+    function wiatHandler(fun){
+        _requestAnimationFrame(function() {
+            _requestAnimationFrame(function() {
+                fun();
+            });
+        });
+    }
+
+    var _endEvents = ['transitionend', 'webkitTransitionEnd', 'oTransitionEnd'];
+    var _handlers = {};
+    var _handlerId = 0;
+
+    CTL.extend({
         from: function(dom, duration, params){
-            if (!(this._isSupported || this.checkSupport())) {
+            if (!(_isSupported || this.checkSupport())) {
                 throw "this browser does not support css animation!!!";
                 return;
             }
@@ -75,11 +115,13 @@
                 return;
             }
 
+            var _self = this;
             var _dom = this._getElement(dom);
 
             if(_dom.length){
                 for(var i = 0, len = _dom.length; i < len; i++){
                     var _params = {};
+                    var _d = _dom[i];
                     for(var j in params){
                         switch(j){
                             case "ease":
@@ -89,11 +131,13 @@
                                 break;
                             default:
                                 _params[j] = _dom[i].style[j];
-                                _dom[i].style[j] = typeof(params[j]) === 'number' ? params[j] + 'px' : params[j];
+                                _d.style[j] = typeof(params[j]) === 'number' ? params[j] + 'px' : params[j];
                                 break;
                         }
                     }
-                    this._tween(_dom[i], duration, _params);
+                    wiatHandler(function() {
+                        _self._tween(_d, duration, _params);
+                    });
                 }
             }else{
                 var _params = {};
@@ -110,12 +154,14 @@
                             break;
                     }
                 }
-                this._tween(_dom, duration, _params);
+                wiatHandler(function() {
+                    _self._tween(_dom, duration, _params);
+                });
             }
         },
 
         to: function(dom, duration, params){
-            if (!(this._isSupported || this.checkSupport())) {
+            if (!(_isSupported || this.checkSupport())) {
                 throw "this browser does not support css animation!!!";
                 return;
             }
@@ -137,7 +183,7 @@
         },
 
         fromTo: function(dom, duration, params, params2){
-            if (!(this._isSupported || this.checkSupport())) {
+            if (!(_isSupported || this.checkSupport())) {
                 throw "this browser does not support css animation!!!";
                 return;
             }
@@ -164,9 +210,9 @@
                                 break;
                         }
                     }
-                    setTimeout(function(){
+                    wiatHandler(function(){
                         _self._tween(_d, duration, params2);
-                    },0);
+                    });
                 }
             }else{
                 for(var j in params){
@@ -180,14 +226,14 @@
                             break;
                     }
                 }
-                setTimeout(function(){
+                wiatHandler(function(){
                     _self._tween(_dom, duration, params2);
-                },0);
+                });
             }
         },
 
         kill: function(dom){
-            if (!(this._isSupported || this.checkSupport())) {
+            if (!(_isSupported || this.checkSupport())) {
                 throw "this browser does not support css animation!!!";
                 return;
             }
@@ -201,17 +247,16 @@
 
             if(_dom.length){
                 for(var i = 0, len = _dom.length; i < len; i++){
-                    this._removeEventHandler(_dom[i], 'transitionend');
-                    this._removeEventHandler(_dom[i], 'webkitTransitionEnd');
-                    this._removeEventHandler(_dom[i], 'oTransitionEnd');
-                    _dom[i].style[this._browserPrefix + "Transition"] = 'none';
-                    //_dom[i].style['marginTop'] = '300px';
+                    for(var j in _endEvents){
+                        this._removeEventHandler(_dom[i], _endEvents[j]);
+                    }
+                    _dom[i].style[_browserPrefix + "Transition"] = 'none';
                 }
             }else{
-                this._removeEventHandler(_dom, 'transitionend');
-                this._removeEventHandler(_dom, 'webkitTransitionEnd');
-                this._removeEventHandler(_dom, 'oTransitionEnd');
-                _dom.style[this._browserPrefix + "Transition"] = 'none';
+                for(var j in _endEvents){
+                    this._removeEventHandler(_dom, _endEvents[j]);
+                }
+                _dom.style[_browserPrefix + "Transition"] = 'none';
             }
         },
 
@@ -244,30 +289,22 @@
             for(var i in params){
                 switch(i){
                     case "ease":
-                        switch(params[i]){
-                            case 'strong':
-                                _ease = 'cubic-bezier(0.5, 0, 0.5, 1)';
-                                break;
-                            case 'linear':
-                            default:
-                                _ease = 'cubic-bezier(0, 0, 1, 1)';
-                                break;
-                        }
+                        _ease = 'cubic-bezier' + params[i];
                         break;
                     case "delay":
                         _delay = params[i] + 's';
                         break;
                     case 'onComplete':
-                        this._addEventHandler(_dom, 'transitionend', this._endHandler, {dom:_dom, fun:params[i]});
-                        this._addEventHandler(_dom, 'webkitTransitionEnd', this._endHandler, {dom:_dom, fun:params[i]});
-                        this._addEventHandler(_dom, 'oTransitionEnd', this._endHandler, {dom:_dom, fun:params[i]});
+                        for(var j in _endEvents){
+                            this._addEventHandler(_dom, _endEvents[j], this._endHandler, {dom:_dom, fun:params[i]});
+                        }
                         break;
                 }
             }
 
-            _dom.style[this._browserPrefix + "Transition"] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
+            _dom.style[_browserPrefix + "Transition"] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
 
-            setTimeout(function(){
+            wiatHandler(function(){
                 for(var i in params){
                     switch(i){
                         case "ease":
@@ -279,19 +316,17 @@
                             break;
                     }
                 }
-            }, 0);
+            });
         },
 
         _endHandler:function(obj){
-            obj.dom.style[this._browserPrefix + "Transition"] = 'none';
-            CssTween._removeEventHandler(obj.dom, 'transitionend');
-            CssTween._removeEventHandler(obj.dom, 'webkitTransitionEnd');
-            CssTween._removeEventHandler(obj.dom, 'oTransitionEnd');
+            obj.dom.style[_browserPrefix + "Transition"] = 'none';
+            for(var j in _endEvents){
+                CTL._removeEventHandler(obj.dom, _endEvents[j]);
+            }
             obj.fun();
         },
 
-        _handlers:{},
-        _handlerId:0,
         _addEventHandler:function (obj, eventName, fun, param){
             var _self = this;
             var _fun = fun;
@@ -311,21 +346,20 @@
             }
 
             if(!obj._ct_hid){
-                obj._ct_hid = ++this._handlerId;
+                obj._ct_hid = ++_handlerId;
             }
-            if(!this._handlers[obj._ct_hid]){
-                this._handlers[obj._ct_hid] = [];
+            if(!_handlers[obj._ct_hid]){
+                _handlers[obj._ct_hid] = [];
             }
-            this._handlers[obj._ct_hid].push({event:eventName, handler:_fun});
+            _handlers[obj._ct_hid].push({event:eventName, handler:_fun, callback:fun});
         },
 
-        _removeEventHandler:function (obj, eventName, fun) {
+        _removeEventHandler:function (obj, eventName) {
             if(!obj._ct_hid) return;
-            var _handlers = this._handlers[obj._ct_hid];
-            var _fun = fun;
-            for(var i = _handlers.length - 1; i >= 0; i--){
-                if(_handlers[i].event === eventName){
-                    _fun = _handlers[i].handler;
+            var _h = _handlers[obj._ct_hid];
+            for(var i = _h.length - 1; i >= 0; i--){
+                if(_h[i].event === eventName){
+                    _fun = _h[i].handler;
                     if (obj.removeEventListener) {
                         obj.removeEventListener(eventName, _fun);
                     }else if (obj.detachEvent){
@@ -333,12 +367,12 @@
                     }else{
                         delete obj["on" + eventName];
                     }
-                    _handlers.splice(i,1);
+                    _h.splice(i,1);
                 }
             }
         }
 
     });
 
-    return CssTween;
+    return CTL;
 }));
