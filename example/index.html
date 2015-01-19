@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <script src="../csstween.js"></script>
+    <script src="../csstween.lite.min.js"></script>
     <style>
         body{
             background: #000;
@@ -46,19 +46,6 @@
     </div>
 </div>
 <script>
-//    CTL.fromTo('.b1 #box', 1, {marginTop:300}, {marginTop:200, ease:CTL.Quad.easeInOut, onComplete:function(){
-//        console.log("complete");
-//    }});
-//    setTimeout(function(){
-//        CTL.kill('.b1 #box');
-//        CTL.fromTo('.b1 #box', 1, {marginTop:50}, {marginTop:100, ease:CTL.Quad.easeInOut, onComplete:function(){
-//            console.log("complete2");
-//            CTL.fromTo('.b1 #box', 1, {marginTop:400}, {marginTop:500, ease:CTL.Quad.easeInOut, onComplete:function(){
-//                console.log("complete3");
-//            }});
-//        }});
-//    }, 500);
-
     CTL.fromTo('.b1 #box', 1, {marginTop:300}, {marginTop:200, ease:CTL.Quad.easeInOut, onComplete:function(){
         console.log("complete");
     }});
