@@ -91,7 +91,7 @@
 
     // --------------------------------------------------------------------主要方法
     var _requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-    function wiatHandler(fun){
+    function waitHandler(fun){
         _requestAnimationFrame(function() {
             _requestAnimationFrame(function() {
                 fun();
@@ -135,7 +135,7 @@
                                 break;
                         }
                     }
-                    wiatHandler(function() {
+                    waitHandler(function() {
                         _self._tween(_d, duration, _params);
                     });
                 }
@@ -154,7 +154,7 @@
                             break;
                     }
                 }
-                wiatHandler(function() {
+                waitHandler(function() {
                     _self._tween(_dom, duration, _params);
                 });
             }
@@ -210,7 +210,7 @@
                                 break;
                         }
                     }
-                    wiatHandler(function(){
+                    waitHandler(function(){
                         _self._tween(_d, duration, params2);
                     });
                 }
@@ -226,7 +226,7 @@
                             break;
                     }
                 }
-                wiatHandler(function(){
+                waitHandler(function(){
                     _self._tween(_dom, duration, params2);
                 });
             }
@@ -304,7 +304,7 @@
 
             _dom.style[_browserPrefix + "Transition"] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
 
-            wiatHandler(function(){
+            waitHandler(function(){
                 for(var i in params){
                     switch(i){
                         case "ease":
