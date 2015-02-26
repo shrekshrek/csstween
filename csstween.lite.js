@@ -38,14 +38,16 @@
     // --------------------------------------------------------------------全局属性
     var _isSupported = false;
     var _browserPrefix = "webkit";
+    var _transitionEvent = 'transitionend';
 
     CTL.checkSupport = function() {
-        var _d = document.createElement("div"), _prefixes = ["", "webkit", "Moz", "O", "ms"], _len = _prefixes.length, i;
+        var _d = document.createElement("div"), _prefixes = ['', 'webkit', 'Moz', 'O'], _len = _prefixes.length, i;
 
         for ( i = 0; i < _len; i++) {
-            if ((_prefixes[i] + "Animation") in _d.style) {
+            if ((_prefixes[i] + "Transition") in _d.style) {
                 _isSupported = true;
                 _browserPrefix = _prefixes[i];
+                if(!(_browserPrefix === '' || _browserPrefix === 'Moz')) _transitionEvent = _browserPrefix.toLowerCase() + 'TransitionEnd';
                 return true;
             }
         }
@@ -90,7 +92,6 @@
     });
 
     // --------------------------------------------------------------------主要方法
-    var _endEvents = ['transitionend', 'webkitTransitionEnd', 'oTransitionEnd'];
     var _handlers = {};
     var _handlerId = 0;
 
@@ -136,14 +137,12 @@
                     _delay = params[i] + 's';
                     break;
                 case 'onComplete':
-                    for(var j in _endEvents){
-                        _addEventHandler(_dom, _endEvents[j], _endHandler, {dom:_dom, fun:params[i]});
-                    }
+                    _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, fun:params[i]});
                     break;
             }
         }
 
-        _dom.style[_browserPrefix + "Transition"] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
+        _dom.style[CTL.browserPrefix("Transition")] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
 
         _waitHandler(function(){
             _paramHandler(_dom, params);
@@ -151,10 +150,8 @@
     }
 
     function _endHandler(obj){
-        obj.dom.style[_browserPrefix + "Transition"] = 'none';
-        for (var j in _endEvents) {
-            _removeEventHandler(obj.dom, _endEvents[j]);
-        }
+        obj.dom.style[CTL.browserPrefix("Transition")] = 'none';
+        _removeEventHandler(obj.dom, _transitionEvent);
         _waitHandler(function() {
             obj.fun();
         });
@@ -342,16 +339,12 @@
 
             if(_dom.length){
                 for(var i = 0, len = _dom.length; i < len; i++){
-                    for(var j in _endEvents){
-                        _removeEventHandler(_dom[i], _endEvents[j]);
-                    }
-                    _dom[i].style[_browserPrefix + "Transition"] = 'none';
+                    _removeEventHandler(_dom[i], _transitionEvent);
+                    _dom[i].style[CTL.browserPrefix("Transition")] = 'none';
                 }
             }else{
-                for(var j in _endEvents){
-                    _removeEventHandler(_dom, _endEvents[j]);
-                }
-                _dom.style[_browserPrefix + "Transition"] = 'none';
+                _removeEventHandler(_dom, _transitionEvent);
+                _dom.style[CTL.browserPrefix("Transition")] = 'none';
             }
         }
 
