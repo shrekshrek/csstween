@@ -55,11 +55,11 @@
     }});
     setTimeout(function(){
         CTL.kill('.b1 #box');
-        CTL.to('.b1 #box', 1, {marginTop:300, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
+        CTL.to('.b1 #box', 1, {marginTop:300, opacity:2, ease:CTL.Quad.easeInOut, onComplete:function(){
             console.log("complete2");
             CTL.from('.b1 #box', 1, {marginTop:100, opacity:0, ease:CTL.Quad.easeInOut, onComplete:function(){
                 console.log("complete3");
-                CTL.fromTo('.b1 #box', 1, {marginTop:300, opacity:0}, {marginTop:200, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
+                CTL.fromTo('.b1 #box', 2, {marginTop:500, opacity:0}, {marginTop:400, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
                     console.log("complete");
                 }});
             }});

@@ -37,14 +37,14 @@
 
     // --------------------------------------------------------------------全局属性
     var _isSupported = false;
-    var _browserPrefix = "webkit";
+    var _browserPrefix = 'webkit';
     var _transitionEvent = 'transitionend';
 
     CTL.checkSupport = function() {
-        var _d = document.createElement("div"), _prefixes = ['', 'webkit', 'Moz', 'O'], _len = _prefixes.length, i;
+        var _d = document.createElement('div'), _prefixes = ['', 'webkit', 'Moz', 'O', 'ms'], _len = _prefixes.length, i;
 
         for ( i = 0; i < _len; i++) {
-            if ((_prefixes[i] + "Transition") in _d.style) {
+            if ((_prefixes[i] + 'Transition') in _d.style) {
                 _isSupported = true;
                 _browserPrefix = _prefixes[i];
                 if(!(_browserPrefix === '' || _browserPrefix === 'Moz')) _transitionEvent = _browserPrefix.toLowerCase() + 'TransitionEnd';
@@ -98,17 +98,28 @@
     var _requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
     function _waitHandler(fun){
         _requestAnimationFrame(function() {
-            fun();
+            //_requestAnimationFrame(function() {
+                fun();
+            //});
         });
     }
 
-    function _getElement(obj){
-        switch(typeof(obj)){
+    function _getElement(dom){
+        if (!(_isSupported || CTL.checkSupport())) {
+            throw "this browser does not support css animation!!!";
+            return;
+        }
+        if(!dom){
+            throw "dom is undefined, can't tween!!!";
+            return;
+        }
+
+        switch(typeof(dom)){
             case 'string':
-                return (typeof(document) === "undefined") ? obj : (document.querySelectorAll ? document.querySelectorAll(obj) : document.getElementById((obj.charAt(0) === "#") ? obj.substr(1) : obj));
+                return (typeof(document) === 'undefined') ? dom : (document.querySelectorAll ? document.querySelectorAll(dom) : document.getElementById((dom.charAt(0) === '#') ? dom.substr(1) : dom));
                 break;
             case 'object':
-                return obj;
+                return dom;
                 break;
             default :
                 throw "dom is undefined, can't tween!!!";
@@ -116,53 +127,56 @@
         }
     }
 
-    function _tween(dom, duration, params){
+    function _tween(dom, duration, fromParams, toParams){
         var _dom = dom;
 
-        var _duration = '';
-        if(duration){
-            _duration = duration + 's';
-        }else{
-            _duration = '0s';
-        }
-
-        var _ease = 'cubic-bezier(0, 0, 1, 1)';
-        var _delay = '0s';
-        for(var i in params){
-            switch(i){
-                case "ease":
-                    _ease = 'cubic-bezier' + params[i];
-                    break;
-                case "delay":
-                    _delay = params[i] + 's';
-                    break;
-                case 'onComplete':
-                    _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, fun:params[i]});
-                    break;
-            }
-        }
-
-        _dom.style[CTL.browserPrefix("Transition")] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
+        _setParams(_dom, fromParams);
 
         _waitHandler(function(){
-            _paramHandler(_dom, params);
+            var _duration = '';
+            if(duration){
+                _duration = duration + 's';
+            }else{
+                _duration = '0s';
+            }
+
+            var _ease = 'cubic-bezier(0, 0, 1, 1)';
+            var _delay = '0s';
+            for(var i in toParams){
+                switch(i){
+                    case 'ease':
+                        _ease = 'cubic-bezier' + toParams[i];
+                        break;
+                    case 'delay':
+                        _delay = toParams[i] + 's';
+                        break;
+                    case 'onComplete':
+                        _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, fun:toParams[i]});
+                        break;
+                }
+            }
+            _dom.style[CTL.browserPrefix('Transition')] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
+
+            _waitHandler(function(){
+                _setParams(_dom, toParams);
+            });
         });
     }
 
     function _endHandler(obj){
-        obj.dom.style[CTL.browserPrefix("Transition")] = 'none';
+        obj.dom.style[CTL.browserPrefix('Transition')] = 'none';
         _removeEventHandler(obj.dom, _transitionEvent);
         _waitHandler(function() {
             obj.fun();
         });
     }
 
-    function _paramHandler(dom, params){
+    function _setParams(dom, params){
         var _dom = dom;
         for(var i in params){
             switch(i){
-                case "ease":
-                case "delay":
+                case 'ease':
+                case 'delay':
                 case 'onComplete':
                     break;
                 case 'fontWeight':
@@ -177,174 +191,96 @@
         }
     }
 
-    function _addEventHandler(obj, eventName, fun, param){
+    function _addEventHandler(dom, eventName, fun, param){
         var _self = this;
         var _fun = fun;
         if(param)
         {
-            _fun = function(e)
+            _fun = function()
             {
                 fun.call(_self, param);
             }
         }
-        if(obj.addEventListener){
-            obj.addEventListener(eventName, _fun, false);
-        }else if(obj.attachEvent){
-            obj.attachEvent('on'+eventName, _fun);
+        if(dom.addEventListener){
+            dom.addEventListener(eventName, _fun, false);
+        }else if(dom.attachEvent){
+            dom.attachEvent('on'+eventName, _fun);
         }else{
-            obj["on" + eventName] = _fun;
+            dom['on' + eventName] = _fun;
         }
 
-        if(!obj._ct_hid){
-            obj._ct_hid = ++_handlerId;
+        if(!dom._ct_hid){
+            dom._ct_hid = ++_handlerId;
         }
-        if(!_handlers[obj._ct_hid]){
-            _handlers[obj._ct_hid] = [];
+        if(!_handlers[dom._ct_hid]){
+            _handlers[dom._ct_hid] = [];
         }
-        _handlers[obj._ct_hid].push({event:eventName, handler:_fun, callback:fun});
+        _handlers[dom._ct_hid].push({event:eventName, handler:_fun, callback:fun});
     }
 
-    function _removeEventHandler(obj, eventName) {
-        if(!obj._ct_hid) return;
-        var _h = _handlers[obj._ct_hid];
+    function _removeEventHandler(dom, eventName) {
+        if(!dom._ct_hid) return;
+        var _h = _handlers[dom._ct_hid];
         for(var i = _h.length - 1; i >= 0; i--){
             if(_h[i].event === eventName){
                 _fun = _h[i].handler;
-                if (obj.removeEventListener) {
-                    obj.removeEventListener(eventName, _fun);
-                }else if (obj.detachEvent){
-                    obj.detachEvent("on" + eventName, _fun);
+                if (dom.removeEventListener) {
+                    dom.removeEventListener(eventName, _fun);
+                }else if (dom.detachEvent){
+                    dom.detachEvent('on' + eventName, _fun);
                 }else{
-                    delete obj["on" + eventName];
+                    delete dom['on' + eventName];
                 }
                 _h.splice(i,1);
             }
         }
     }
 
+
     CTL.extend({
-        from: function(dom, duration, params){
-            if (!(_isSupported || this.checkSupport())) {
-                throw "this browser does not support css animation!!!";
-                return;
-            }
-
-            if(!dom){
-                throw "dom is undefined, can't tween!!!";
-                return;
-            }
-
+        fromTo: function(dom, duration, fromParams, toParams){
             var _dom = _getElement(dom);
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                _tween(_d, duration, fromParams, toParams);
+            }
+        },
 
-            if(_dom.length){
-                for(var i = 0, len = _dom.length; i < len; i++){
-                    var _params = {};
-                    var _d = _dom[i];
-                    for(var j in params){
-                        if(_d.style[j]){
-                            _params[j] = _d.style[j];
-                        }else{
-                            _params[j] = params[j];
-                        }
-                    }
-                    _paramHandler(_d, params);
-                    _waitHandler(function() {
-                        _tween(_d, duration, _params);
-                    });
-                }
-            }else{
-                var _params = {};
-                for(var j in params){
-                    if(_dom.style[j]){
-                        _params[j] = _dom.style[j];
+        from: function(dom, duration, fromParams){
+            var _dom = _getElement(dom);
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                var _toParams = {};
+                for(var j in fromParams){
+                    if(_d.style[j]){
+                        _toParams[j] = _d.style[j];
                     }else{
-                        _params[j] = params[j];
+                        _toParams[j] = fromParams[j];
                     }
                 }
-                _paramHandler(_dom, params);
-                _waitHandler(function() {
-                    _tween(_dom, duration, _params);
-                });
+                _tween(_d, duration, fromParams, _toParams);
             }
         },
 
-        to: function(dom, duration, params){
-            if (!(_isSupported || this.checkSupport())) {
-                throw "this browser does not support css animation!!!";
-                return;
-            }
-
-            if(!dom){
-                throw "dom is undefined, can't tween!!!";
-                return;
-            }
-
+        to: function(dom, duration, toParams){
             var _dom = _getElement(dom);
-
-            if(_dom.length){
-                for(var i = 0, len = _dom.length; i < len; i++){
-                    var _d = _dom[i];
-                    _waitHandler(function() {
-                        _tween(_d, duration, params);
-                    });
-                }
-            }else{
-                _waitHandler(function() {
-                    _tween(_dom, duration, params);
-                });
-            }
-        },
-
-        fromTo: function(dom, duration, params, params2){
-            if (!(_isSupported || this.checkSupport())) {
-                throw "this browser does not support css animation!!!";
-                return;
-            }
-
-            if(!dom){
-                throw "dom is undefined, can't tween!!!";
-                return;
-            }
-
-            var _dom = _getElement(dom);
-
-            if(_dom.length){
-                for(var i = 0, len = _dom.length; i < len; i++){
-                    var _d = _dom[i];
-                    _paramHandler(_d, params);
-                    _waitHandler(function(){
-                        _tween(_d, duration, params2);
-                    });
-                }
-            }else{
-                _paramHandler(_dom, params);
-                _waitHandler(function(){
-                    _tween(_dom, duration, params2);
-                });
+            var _fromParams = {};
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                _tween(_d, duration, _fromParams, toParams);
             }
         },
 
         kill: function(dom){
-            if (!(_isSupported || this.checkSupport())) {
-                throw "this browser does not support css animation!!!";
-                return;
-            }
-
-            if(!dom){
-                throw "dom is undefined, can't tween!!!";
-                return;
-            }
-
             var _dom = _getElement(dom);
-
-            if(_dom.length){
-                for(var i = 0, len = _dom.length; i < len; i++){
-                    _removeEventHandler(_dom[i], _transitionEvent);
-                    _dom[i].style[CTL.browserPrefix("Transition")] = 'none';
-                }
-            }else{
-                _removeEventHandler(_dom, _transitionEvent);
-                _dom.style[CTL.browserPrefix("Transition")] = 'none';
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                _removeEventHandler(_d, _transitionEvent);
+                _d.style[CTL.browserPrefix('Transition')] = 'none';
             }
         }
 
