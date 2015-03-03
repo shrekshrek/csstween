@@ -127,8 +127,8 @@
         }
     }
 
-    function _tween(dom, duration, fromParams, toParams){
-        var _dom = dom;
+    function _tween(target, duration, fromParams, toParams){
+        var _dom = target;
 
         _setParams(_dom, fromParams);
 
@@ -142,6 +142,8 @@
 
             var _ease = 'cubic-bezier(0, 0, 1, 1)';
             var _delay = '0s';
+            var _callback = '';
+            var _callbackParams = [];
             for(var i in toParams){
                 switch(i){
                     case 'ease':
@@ -151,10 +153,17 @@
                         _delay = toParams[i] + 's';
                         break;
                     case 'onComplete':
-                        _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, fun:toParams[i]});
+                        _callback = toParams[i];
+                        break;
+                    case 'onCompleteParams':
+                        _callbackParams = toParams[i];
                         break;
                 }
             }
+            if(_callback !== ''){
+                _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, callback:_callback, params:_callbackParams});
+            }
+
             _dom.style[CTL.browserPrefix('Transition')] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
 
             _waitHandler(function(){
@@ -167,7 +176,7 @@
         obj.dom.style[CTL.browserPrefix('Transition')] = 'none';
         _removeEventHandler(obj.dom, _transitionEvent);
         _waitHandler(function() {
-            obj.fun();
+            obj.callback.apply(obj.dom, obj.params);
         });
     }
 
@@ -178,6 +187,7 @@
                 case 'ease':
                 case 'delay':
                 case 'onComplete':
+                case 'onCompleteParams':
                     break;
                 case 'fontWeight':
                 case 'opacity':
@@ -223,7 +233,7 @@
         var _h = _handlers[dom._ct_hid];
         for(var i = _h.length - 1; i >= 0; i--){
             if(_h[i].event === eventName){
-                _fun = _h[i].handler;
+                var _fun = _h[i].handler;
                 if (dom.removeEventListener) {
                     dom.removeEventListener(eventName, _fun);
                 }else if (dom.detachEvent){
@@ -238,8 +248,8 @@
 
 
     CTL.extend({
-        fromTo: function(dom, duration, fromParams, toParams){
-            var _dom = _getElement(dom);
+        fromTo: function(target, duration, fromParams, toParams){
+            var _dom = _getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
@@ -247,8 +257,8 @@
             }
         },
 
-        from: function(dom, duration, fromParams){
-            var _dom = _getElement(dom);
+        from: function(target, duration, fromParams){
+            var _dom = _getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
@@ -264,8 +274,8 @@
             }
         },
 
-        to: function(dom, duration, toParams){
-            var _dom = _getElement(dom);
+        to: function(target, duration, toParams){
+            var _dom = _getElement(target);
             var _fromParams = {};
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
@@ -274,8 +284,8 @@
             }
         },
 
-        kill: function(dom){
-            var _dom = _getElement(dom);
+        kill: function(target){
+            var _dom = _getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];

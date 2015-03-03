@@ -16,31 +16,6 @@
             height: 100px;
             background: #aa4466;
         }
-        .move{
-            transition: all 2s ease-out;
-            margin-top: 150px;
-        }
-    </style>
-    <style>
-        @keyframes pulse {
-            0% {
-                background-color: #aa4466;
-            }
-
-            100% {
-                background-color: #aaddee;
-            }
-        }
-
-        @-webkit-keyframes pulse {
-            0% {
-                background-color: #aa4466;
-            }
-
-            100% {
-                background-color: #aaddee;
-            }
-        }
     </style>
 </head>
 <body>
@@ -50,18 +25,18 @@
     </div>
 </div>
 <script>
-    CTL.fromTo('.b1 #box', 1, {marginTop:300, opacity:0}, {marginTop:200, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
-        console.log("complete");
+    CTL.fromTo('.b1 #box', 1, {marginTop:300, opacity:0}, {marginTop:200, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(n){
+        console.log("first complete");
     }});
     setTimeout(function(){
         CTL.kill('.b1 #box');
-        CTL.to('.b1 #box', 1, {marginTop:300, opacity:2, ease:CTL.Quad.easeInOut, onComplete:function(){
+        CTL.to('.b1 #box', 1, {marginTop:300, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
             console.log("complete2");
-            CTL.from('.b1 #box', 1, {marginTop:100, opacity:0, ease:CTL.Quad.easeInOut, onComplete:function(){
+            CTL.from('.b1 #box', 1, {marginTop:100, opacity:0.5, ease:CTL.Quad.easeOut, onComplete:function(){
                 console.log("complete3");
-                CTL.fromTo('.b1 #box', 2, {marginTop:500, opacity:0}, {marginTop:400, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
-                    console.log("complete");
-                }});
+                CTL.fromTo('.b1 #box', 2, {marginTop:500, opacity:0.5}, {marginTop:400, opacity:1, ease:CTL.Quad.easeOut, onComplete:function(n){
+                    console.log("complete",this,n);
+                }, onCompleteParams:[50]});
             }});
         }});
     }, 500);
