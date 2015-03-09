@@ -9,27 +9,27 @@
 (function(root, factory) {
     if (typeof define === 'function' && define.amd) {
         define(['exports'], function(exports) {
-            root.CTL = root.CssTweenLite = factory(root, exports);
+            root.CT = root.CssTween = factory(root, exports);
         });
     } else if (typeof exports !== 'undefined') {
         factory(root, exports);
     } else {
-        root.CTL = root.CssTweenLite = factory(root, {});
+        root.CT = root.CssTween = factory(root, {});
     }
 
-}(this, function(root, CTL) {
+}(this, function(root, CT) {
 
-    var previousCssTweeen = root.CTL;
+    var previousCssTween = root.CT;
 
-    CTL.VERSION = '0.1.0';
+    CT.VERSION = '0.1.0';
 
-    CTL.noConflict = function() {
-        root.CTL = previousCssTweeen;
+    CT.noConflict = function() {
+        root.CT = previousCssTween;
         return this;
     };
 
     // --------------------------------------------------------------------extend
-    CTL.extend = function(obj) {
+    CT.extend = function(obj) {
         for (var prop in obj) {
             this[prop] = obj[prop];
         }
@@ -40,7 +40,7 @@
     var _browserPrefix = 'webkit';
     var _transitionEvent = 'transitionend';
 
-    CTL.checkSupport = function() {
+    CT.checkSupport = function() {
         var _d = document.createElement('div');
         var _prefixes = ['', 'webkit', 'Moz', 'O', 'ms'];
 
@@ -55,7 +55,7 @@
         return false;
     };
 
-    CTL.browserPrefix = function(str) {
+    CT.browserPrefix = function(str) {
         if (arguments.length) {
             return _browserPrefix + str;
         } else {
@@ -64,7 +64,7 @@
     };
 
     // --------------------------------------------------------------------缓动选项
-    CTL.extend({
+    CT.extend({
         Linear: {
             easeIn:'(0, 0, 1, 1)',
             easeOut:'(0, 0, 1, 1)',
@@ -106,7 +106,7 @@
     }
 
     function _getElement(dom){
-        if (!(_isSupported || CTL.checkSupport())) {
+        if (!(_isSupported || CT.checkSupport())) {
             throw "this browser does not support css animation!!!";
             return;
         }
@@ -165,7 +165,7 @@
                 _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, callback:_callback, params:_callbackParams});
             }
 
-            _dom.style[CTL.browserPrefix('Transition')] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
+            _dom.style[CT.browserPrefix('Transition')] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
 
             _waitHandler(function(){
                 _setParams(_dom, toParams);
@@ -174,7 +174,7 @@
     }
 
     function _endHandler(obj){
-        obj.dom.style[CTL.browserPrefix('Transition')] = 'none';
+        obj.dom.style[CT.browserPrefix('Transition')] = 'none';
         _removeEventHandler(obj.dom, _transitionEvent);
         _waitHandler(function() {
             obj.callback.apply(obj.dom, obj.params);
@@ -186,7 +186,7 @@
         var _param = '';
         switch(param){
             case 'transform':
-                _param = _dom.style[CTL.browserPrefix('Transform')];
+                _param = _dom.style[CT.browserPrefix('Transform')];
                 break;
             default:
                 _param = param;
@@ -223,7 +223,7 @@
                     _dom.style[i] = params[i];
                     break;
                 case 'transform':
-                    _dom.style[CTL.browserPrefix('Transform')] = params[i];
+                    _dom.style[CT.browserPrefix('Transform')] = params[i];
                     break;
                 default:
                     _dom.style[i] = typeof(params[i]) === 'number' ? params[i] + 'px' : params[i];
@@ -279,7 +279,7 @@
 
 
     // --------------------------------------------------------------------主要方法
-    CTL.extend({
+    CT.extend({
         get: function(target, param){
             var _dom = _getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
@@ -340,7 +340,7 @@
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 _removeEventHandler(_d, _transitionEvent);
-                _d.style[CTL.browserPrefix('Transition')] = 'none';
+                _d.style[CT.browserPrefix('Transition')] = 'none';
             }
         },
 
@@ -356,5 +356,5 @@
 
     });
 
-    return CTL;
+    return CT;
 }));

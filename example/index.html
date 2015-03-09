@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <script src="../csstween.lite.js"></script>
+    <script src="../csstween.js"></script>
     <style>
         body{
             background: #000;
@@ -40,30 +40,30 @@
 
 <script>
 
-    CTL.fromTo('.b1 #box1', 1, {marginTop:300, opacity:0}, {marginTop:200, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
+    CT.fromTo('.b1 #box1', 1, {marginTop:300, opacity:0}, {marginTop:200, opacity:1, ease:CT.Quad.easeInOut, onComplete:function(){
         console.log("first complete");
     }});
     setTimeout(function(){
-        CTL.kill('.b1 #box1');
-        CTL.to('.b1 #box1', 1, {marginTop:300, opacity:1, ease:CTL.Quad.easeInOut, onComplete:function(){
+        CT.kill('.b1 #box1');
+        CT.to('.b1 #box1', 1, {marginTop:300, opacity:1, ease:CT.Quad.easeInOut, onComplete:function(){
             console.log("complete2");
-            CTL.from('.b1 #box1', 1, {marginTop:100, opacity:0.5, ease:CTL.Quad.easeOut, onComplete:function(){
+            CT.from('.b1 #box1', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.easeOut, onComplete:function(){
                 console.log("complete3");
-                CTL.fromTo('.b1 #box1', 2, {marginTop:500, opacity:0.5}, {marginTop:400, opacity:1, ease:CTL.Quad.easeOut, onComplete:function(n){
+                CT.fromTo('.b1 #box1', 2, {marginTop:500, opacity:0.5}, {marginTop:400, opacity:1, ease:CT.Quad.easeOut, onComplete:function(n){
                     console.log("complete",this,n);
                 }, onCompleteParams:[50]});
             }});
         }});
     }, 500);
-    CTL.set('.b1 #box', {rotation:180, ease:CTL.Linear.easeInOut});
+    CT.set('.b1 #box', {rotation:180, ease:CT.Linear.easeInOut});
 
 //    function up(){
-//        CTL.fromTo('.b1 #box', 1, {rotateZ:0, scaleX:3, scaleY:0.1}, {rotateZ:359, scaleX:2, scaleY:0.1, ease:CTL.Linear.easeInOut, onComplete:function(){
+//        CT.fromTo('.b1 #box', 1, {rotateZ:0, scaleX:3, scaleY:0.1}, {rotateZ:359, scaleX:2, scaleY:0.1, ease:CT.Linear.easeInOut, onComplete:function(){
 //            up();
 //        }});
 //    }
 
-//    CTL.fromTo('.b1 #box', 1, {transform:'rotate(0deg) scale(0.1,2)'}, {transform:'rotate(360deg) scale(0.1,1)', ease:CTL.Linear.easeInOut, onComplete:function(){
+//    CT.fromTo('.b1 #box', 1, {transform:'rotate(0deg) scale(0.1,2)'}, {transform:'rotate(360deg) scale(0.1,1)', ease:CT.Linear.easeInOut, onComplete:function(){
 //        up();
 //    }});
 
