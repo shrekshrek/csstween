@@ -41,9 +41,10 @@
     var _transitionEvent = 'transitionend';
 
     CTL.checkSupport = function() {
-        var _d = document.createElement('div'), _prefixes = ['', 'webkit', 'Moz', 'O', 'ms'], _len = _prefixes.length, i;
+        var _d = document.createElement('div');
+        var _prefixes = ['', 'webkit', 'Moz', 'O', 'ms'];
 
-        for ( i = 0; i < _len; i++) {
+        for (var i in _prefixes) {console.log(i);
             if ((_prefixes[i] + 'Transition') in _d.style) {
                 _isSupported = true;
                 _browserPrefix = _prefixes[i];
@@ -91,7 +92,7 @@
         }
     });
 
-    // --------------------------------------------------------------------主要方法
+    // --------------------------------------------------------------------功能实现主体
     var _handlers = {};
     var _handlerId = 0;
 
@@ -180,6 +181,31 @@
         });
     }
 
+    function _getParams(dom, param){
+        var _dom = dom;
+        var _param = '';
+        switch(param){
+            case 'transform':
+                _param = _dom.style[CTL.browserPrefix('Transform')];
+                break;
+            default:
+                _param = param;
+                break;
+        }
+
+        if(_dom.style[_param]){
+            return _dom.style[_param];
+        }else if(_dom.currentStyle){
+            return _dom.currentStyle[_param];
+        }else if(document.defaultView && document.defaultView.getComputedStyle){
+            var _p = _param.replace(/([A-Z])/g,'-$1').toLowerCase();
+            var _s = document.defaultView.getComputedStyle(_dom,'');
+            return _s && _s.getPropertyValue(_p);
+        }else{
+            return null;
+        }
+    }
+
     function _setParams(dom, params){
         var _dom = dom;
         for(var i in params){
@@ -191,8 +217,13 @@
                     break;
                 case 'fontWeight':
                 case 'opacity':
+                case 'outlineOffset':
+                case 'zIndex':
                 case 'zoom':
                     _dom.style[i] = params[i];
+                    break;
+                case 'transform':
+                    _dom.style[CTL.browserPrefix('Transform')] = params[i];
                     break;
                 default:
                     _dom.style[i] = typeof(params[i]) === 'number' ? params[i] + 'px' : params[i];
@@ -225,7 +256,7 @@
         if(!_handlers[dom._ct_hid]){
             _handlers[dom._ct_hid] = [];
         }
-        _handlers[dom._ct_hid].push({event:eventName, handler:_fun, callback:fun});
+        _handlers[dom._ct_hid].push({dom:dom, event:eventName, handler:_fun, callback:fun});
     }
 
     function _removeEventHandler(dom, eventName) {
@@ -247,7 +278,26 @@
     }
 
 
+    // --------------------------------------------------------------------主要方法
     CTL.extend({
+        get: function(target, param){
+            var _dom = _getElement(target);
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                return _getParams(_d,param);
+            }
+        },
+
+        set: function(target, params){
+            var _dom = _getElement(target);
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                _setParams(_d, params);
+            }
+        },
+
         fromTo: function(target, duration, fromParams, toParams){
             var _dom = _getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
@@ -264,8 +314,8 @@
                 var _d = _dom[i];
                 var _toParams = {};
                 for(var j in fromParams){
-                    if(_d.style[j]){
-                        _toParams[j] = _d.style[j];
+                    if(_d.style[j] !== undefined){
+                        _toParams[j] = _getParams(_d, j);
                     }else{
                         _toParams[j] = fromParams[j];
                     }
@@ -276,10 +326,10 @@
 
         to: function(target, duration, toParams){
             var _dom = _getElement(target);
-            var _fromParams = {};
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
+                var _fromParams = {};
                 _tween(_d, duration, _fromParams, toParams);
             }
         },
@@ -291,6 +341,16 @@
                 var _d = _dom[i];
                 _removeEventHandler(_d, _transitionEvent);
                 _d.style[CTL.browserPrefix('Transition')] = 'none';
+            }
+        },
+
+        killAll: function(){
+            for(var i in _handlers){
+                var _a = _handlers[i];
+                for(var j in _a){
+                    var _d = _a[j].dom;
+                    this.kill(_d, _transitionEvent);
+                }
             }
         }
 
