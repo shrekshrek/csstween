@@ -44,7 +44,7 @@
         var _d = document.createElement('div');
         var _prefixes = ['', 'webkit', 'Moz', 'O', 'ms'];
 
-        for (var i in _prefixes) {console.log(i);
+        for (var i in _prefixes) {
             if ((_prefixes[i] + 'Transition') in _d.style) {
                 _isSupported = true;
                 _browserPrefix = _prefixes[i];
@@ -131,7 +131,7 @@
     function _tween(target, duration, fromParams, toParams){
         var _dom = target;
 
-        _setParams(_dom, fromParams);
+        _setStyle(_dom, fromParams);
 
         _waitHandler(function(){
             var _duration = '';
@@ -161,14 +161,12 @@
                         break;
                 }
             }
-            if(_callback !== ''){
-                _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, callback:_callback, params:_callbackParams});
-            }
+            _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, callback:_callback, params:_callbackParams});
 
             _dom.style[CT.browserPrefix('Transition')] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
 
             _waitHandler(function(){
-                _setParams(_dom, toParams);
+                _setStyle(_dom, toParams);
             });
         });
     }
@@ -181,7 +179,7 @@
         });
     }
 
-    function _getParams(dom, param){
+    function _getStyle(dom, param){
         var _dom = dom;
         var _param = '';
         switch(param){
@@ -206,7 +204,7 @@
         }
     }
 
-    function _setParams(dom, params){
+    function _setStyle(dom, params){
         var _dom = dom;
         for(var i in params){
             switch(i){
@@ -285,7 +283,7 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                return _getParams(_d,param);
+                return _getStyle(_d,param);
             }
         },
 
@@ -294,7 +292,7 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                _setParams(_d, params);
+                _setStyle(_d, params);
             }
         },
 
@@ -315,7 +313,7 @@
                 var _toParams = {};
                 for(var j in fromParams){
                     if(_d.style[j] !== undefined){
-                        _toParams[j] = _getParams(_d, j);
+                        _toParams[j] = _getStyle(_d, j);
                     }else{
                         _toParams[j] = fromParams[j];
                     }
