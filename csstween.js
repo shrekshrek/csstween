@@ -1,6 +1,6 @@
 /*!
- * VERSION: 0.1.0
- * DATE: 2015-01-09
+ * VERSION: 0.2.0
+ * DATE: 2015-03-11
  * GIT:https://github.com/shrekshrek/csstween
  *
  * @author: Shrek.wang, shrekshrek@gmail.com
