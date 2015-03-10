@@ -21,7 +21,7 @@
 
     var previousCssTween = root.CT;
 
-    CT.VERSION = '0.2.0';
+    CT.VERSION = '0.1.0';
 
     CT.noConflict = function() {
         root.CT = previousCssTween;
@@ -35,57 +35,33 @@
         }
     };
 
-    // --------------------------------------------------------------------检测是否支持,辅助公用方法
-    var _isSupported;
-    var _browserPrefix = '';
-    var _startEvent = 'animationstart';
-    var _iterationEvent = 'animationiteration';
-    var _endEvent = 'animationend';
+    // --------------------------------------------------------------------全局属性
+    var _isSupported = false;
+    var _browserPrefix = 'webkit';
+    var _transitionEvent = 'transitionend';
 
-    CT.extend({
-        checkSupport:function(){
-            if(_isSupported !== undefined) return _isSupported;
+    CT.checkSupport = function() {
+        var _d = document.createElement('div');
+        var _prefixes = ['', 'webkit', 'Moz', 'O', 'ms'];
 
-            var _d = document.createElement('div');
-            var _prefixes = ['', 'Webkit', 'Moz', 'O', 'Ms'];
-
-            for (var i in _prefixes) {
-                if ((_prefixes[i] + 'Animation') in _d.style) {
-                    _isSupported = true;
-                    _browserPrefix = _prefixes[i];
-                    if(!(_browserPrefix === '' || _browserPrefix === 'Moz')){
-                        _startEvent = _browserPrefix.toLowerCase() + 'Animationstart';
-                        _iterationEvent = _browserPrefix.toLowerCase() + 'Animationiteration';
-                        _endEvent = _browserPrefix.toLowerCase() + 'AnimationEnd';
-                    }
-
-                    _initKeyframesStyle();
-
-                    return true;
-                }
+        for (var i in _prefixes) {
+            if ((_prefixes[i] + 'Transition') in _d.style) {
+                _isSupported = true;
+                _browserPrefix = _prefixes[i];
+                if(!(_browserPrefix === '' || _browserPrefix === 'Moz')) _transitionEvent = _browserPrefix.toLowerCase() + 'TransitionEnd';
+                return true;
             }
-            return false;
-        },
-
-        browserPrefix:function(str){
-            if (arguments.length) {
-                return _browserPrefix + str;
-            } else {
-                return _browserPrefix;
-            }
-        },
-
-        hyphenize:function(str){
-            return str.replace( /([A-Z])/g, "-$1" ).toLowerCase();
-        },
-
-        camelize:function(str){
-            return str.replace(/\-(\w)/g, function(all, letter){
-                return letter.toUpperCase();
-            });
         }
+        return false;
+    };
 
-    });
+    CT.browserPrefix = function(str) {
+        if (arguments.length) {
+            return _browserPrefix + str;
+        } else {
+            return _browserPrefix;
+        }
+    };
 
     // --------------------------------------------------------------------缓动选项
     CT.extend({
@@ -116,83 +92,24 @@
         }
     });
 
-
-
-
-    // --------------------------------------------------------------------css rule 相关函数
-    var _keyframesRule = window.CSSRule.KEYFRAMES_RULE || window.CSSRule.WEBKIT_KEYFRAMES_RULE || window.CSSRule.MOZ_KEYFRAMES_RULE;
-    var _kfsSheet;
-    var _kfsRules;
-    var _kfsId = 0;
-    function _initKeyframesStyle(){
-        var _style = document.createElement('style');
-        _style.rel = 'stylesheet';
-        _style.type = 'text/css';
-        document.getElementsByTagName('head')[0].appendChild(_style);
-        _kfsSheet = _style.sheet;
-        _kfsRules = _kfsSheet.cssRules || _kfsSheet.rules || [];
-    }
-
-    function _getKeyframe(name){
-        for(var i in _kfsRules){
-            var _rule = _kfsRules[i];
-            if(_rule.type === _keyframesRule && _rule.name === name){
-                return {rule:_rule, index:i};
-            }
-        }
-        return null;
-    }
-
-    function _addKeyFrames(name, fromParams, toParams) {
-        var _index = _kfsRules.length;
-        var _name = 'kfs' + name;
-        var _text = '0%{' + _concatParam(fromParams) + '}' + '100%{' + _concatParam(toParams) + '}';
-
-        if (_kfsSheet.insertRule) {
-            _kfsSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + "{" + _text + "}", _index);
-        } else if (_kfsSheet.addRule) {
-            _kfsSheet.addRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes')) + ' ' + _name, _text, _index);
-        }
-        return _name;
-    }
-
-    function _concatParam(params){
-        var _text = '';
-        for(var i in params){
-            switch(i){
-                case 'transform':
-                    _text += CT.hyphenize(CT.browserPrefix('Transform')) + ':' + params[i] + ';';
-                    break;
-                default:
-                    _text += CT.hyphenize(i) + ':' + params[i] + ';';
-                    break;
-            }
-        }
-        return _text;
-    }
-
-    function _removeKeyFrames(name) {
-        var _obj = _getKeyframe(name);
-        if(_obj === null) return;
-
-        if (_kfsSheet.deleteRule) {
-            _kfsSheet.deleteRule(_obj.index);
-        } else if (_kfsSheet.removeRule) {
-            _kfsSheet.removeRule(_obj.index);
-        }
-    }
-
-
-
-    // --------------------------------------------------------------------功能主体
+    // --------------------------------------------------------------------功能实现主体
     var _handlers = {};
     var _handlerId = 0;
+
+    var _requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+    function _waitHandler(fun){
+        _requestAnimationFrame(function() {
+            //_requestAnimationFrame(function() {
+                fun();
+            //});
+        });
+    }
+
     function _getElement(dom){
         if (!(_isSupported || CT.checkSupport())) {
             throw "this browser does not support css animation!!!";
             return;
         }
-
         if(!dom){
             throw "dom is undefined, can't tween!!!";
             return;
@@ -214,59 +131,52 @@
     function _tween(target, duration, fromParams, toParams){
         var _dom = target;
 
-        var _fromParams = {};
-        for(var j in fromParams){
-            var _name = CT.camelize(j);
-            if(_dom.style[_name] !== undefined) _fromParams[_name] = fromParams[j];
-        }
+        _setStyle(_dom, fromParams);
 
-        var _toParams = {};
-        var _duration = duration + 's';
-        var _ease = 'cubic-bezier(0, 0, 1, 1)';
-        var _delay = '0s';
-        var _iteration = 1;
-        var _direction = 'normal';
-        var _callback = '';
-        var _callbackParams = [];
-        for(var i in toParams){
-            switch(i){
-                case 'repeat':
-                    if(toParams[i] === -1) _iteration = 'infinite';
-                    else _iteration = toParams[i];
-                    break;
-                case 'yoyo':
-                    if(toParams[i]) _direction = 'alternate';
-                    break;
-                case 'ease':
-                    _ease = 'cubic-bezier' + toParams[i];
-                    break;
-                case 'delay':
-                    _delay = toParams[i] + 's';
-                    break;
-                case 'onComplete':
-                    _callback = toParams[i];
-                    break;
-                case 'onCompleteParams':
-                    _callbackParams = toParams[i];
-                    break;
-                default:
-                    var _name = CT.camelize(i);
-                    if(_dom.style[_name] !== undefined) _toParams[_name] = toParams[i];
-                    break;
+        _waitHandler(function(){
+            var _duration = '';
+            if(duration){
+                _duration = duration + 's';
+            }else{
+                _duration = '0s';
             }
-        }
 
-        var _kfsName = _addKeyFrames(++_kfsId, _fromParams, _toParams);
-        _addEventHandler(_dom, _endEvent, _endHandler, {dom:_dom, callback:_callback, params:_callbackParams}, _kfsName);
-        _dom.style[CT.browserPrefix('Animation')] = _kfsName + ' ' + _duration + ' ' + _ease + ' ' + _delay + ' ' + _iteration + ' ' + _direction;
-        _setStyle(_dom, _toParams);
+            var _ease = 'cubic-bezier(0, 0, 1, 1)';
+            var _delay = '0s';
+            var _callback = '';
+            var _callbackParams = [];
+            for(var i in toParams){
+                switch(i){
+                    case 'ease':
+                        _ease = 'cubic-bezier' + toParams[i];
+                        break;
+                    case 'delay':
+                        _delay = toParams[i] + 's';
+                        break;
+                    case 'onComplete':
+                        _callback = toParams[i];
+                        break;
+                    case 'onCompleteParams':
+                        _callbackParams = toParams[i];
+                        break;
+                }
+            }
+            _addEventHandler(_dom, _transitionEvent, _endHandler, {dom:_dom, callback:_callback, params:_callbackParams});
 
+            _dom.style[CT.browserPrefix('Transition')] = 'all ' + _duration + ' ' + _ease + ' ' + _delay;
+
+            _waitHandler(function(){
+                _setStyle(_dom, toParams);
+            });
+        });
     }
 
     function _endHandler(obj){
-        obj.dom.style[CT.browserPrefix('Animation')] = 'none';
-        _removeEventHandler(obj.dom, _endEvent);
-        obj.callback.apply(obj.dom, obj.params);
+        obj.dom.style[CT.browserPrefix('Transition')] = 'none';
+        _removeEventHandler(obj.dom, _transitionEvent);
+        _waitHandler(function() {
+            obj.callback.apply(obj.dom, obj.params);
+        });
     }
 
     function _getStyle(dom, param){
@@ -274,10 +184,10 @@
         var _param = '';
         switch(param){
             case 'transform':
-                _param = CT.browserPrefix('Transform');
+                _param = _dom.style[CT.browserPrefix('Transform')];
                 break;
             default:
-                _param = CT.camelize(param);
+                _param = param;
                 break;
         }
 
@@ -286,7 +196,7 @@
         }else if(_dom.currentStyle){
             return _dom.currentStyle[_param];
         }else if(document.defaultView && document.defaultView.getComputedStyle){
-            var _p = CT.hyphenize(_param);
+            var _p = _param.replace(/([A-Z])/g,'-$1').toLowerCase();
             var _s = document.defaultView.getComputedStyle(_dom,'');
             return _s && _s.getPropertyValue(_p);
         }else{
@@ -297,11 +207,30 @@
     function _setStyle(dom, params){
         var _dom = dom;
         for(var i in params){
-            _dom.style[i] = params[i];
+            switch(i){
+                case 'ease':
+                case 'delay':
+                case 'onComplete':
+                case 'onCompleteParams':
+                    break;
+                case 'fontWeight':
+                case 'opacity':
+                case 'outlineOffset':
+                case 'zIndex':
+                case 'zoom':
+                    _dom.style[i] = params[i];
+                    break;
+                case 'transform':
+                    _dom.style[CT.browserPrefix('Transform')] = params[i];
+                    break;
+                default:
+                    _dom.style[i] = typeof(params[i]) === 'number' ? params[i] + 'px' : params[i];
+                    break;
+            }
         }
     }
 
-    function _addEventHandler(dom, eventName, fun, param, kfs){
+    function _addEventHandler(dom, eventName, fun, param){
         var _self = this;
         var _fun = fun;
         if(param)
@@ -325,7 +254,7 @@
         if(!_handlers[dom._ct_hid]){
             _handlers[dom._ct_hid] = [];
         }
-        _handlers[dom._ct_hid].push({dom:dom, event:eventName, handler:_fun, callback:fun, kfs:kfs});
+        _handlers[dom._ct_hid].push({dom:dom, event:eventName, handler:_fun, callback:fun});
     }
 
     function _removeEventHandler(dom, eventName) {
@@ -333,9 +262,6 @@
         var _h = _handlers[dom._ct_hid];
         for(var i = _h.length - 1; i >= 0; i--){
             if(_h[i].event === eventName){
-
-                _removeKeyFrames(_h[i].kfs);
-
                 var _fun = _h[i].handler;
                 if (dom.removeEventListener) {
                     dom.removeEventListener(eventName, _fun);
@@ -402,13 +328,6 @@
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 var _fromParams = {};
-                for(var j in toParams){
-                    if(_d.style[j] !== undefined){
-                        _fromParams[j] = _getStyle(_d, j);
-                    }else{
-                        _fromParams[j] = toParams[j];
-                    }
-                }
                 _tween(_d, duration, _fromParams, toParams);
             }
         },
@@ -418,8 +337,8 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                _d.style[CT.browserPrefix('Animation')] = 'none';
-                _removeEventHandler(_d, _endEvent);
+                _removeEventHandler(_d, _transitionEvent);
+                _d.style[CT.browserPrefix('Transition')] = 'none';
             }
         },
 
@@ -428,7 +347,7 @@
                 var _a = _handlers[i];
                 for(var j in _a){
                     var _d = _a[j].dom;
-                    this.kill(_d, _endEvent);
+                    this.kill(_d, _transitionEvent);
                 }
             }
         }
