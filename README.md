@@ -50,3 +50,8 @@ CT.Expo
 
 
 以上方法和参数均是参考TweenMax的方式，有使用经验者会很容易上手。
+
+
+2015.01.09 使用css transition实现第一版
+
+2015.03.09 使用css animation实现第二版
