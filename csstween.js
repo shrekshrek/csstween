@@ -176,6 +176,7 @@
 
     // --------------------------------------------------------------------功能主体
     var events = {};
+    var eventId = 0;
     function getElement(dom){
         if (!(_isSupported || CT.checkSupport())) {
             throw "this browser does not support css animation!!!";
@@ -300,19 +301,22 @@
     }
 
     function endHandler(params){
-        setStyle(params.dom, params.css);
-        params.dom.style[CT.browserPrefix('Animation')] = 'none';
-        removeKeyFrames(params.kfs);
-        removeEventHandler(params.dom);
+        endAnim(params);
 
         if(params.callback)
             params.callback.apply(params.dom, params.params);
     }
 
+    function endAnim(params){
+        setStyle(params.dom, params.css);
+        params.dom.style[CT.browserPrefix('Animation')] = 'none';
+        removeKeyFrames(params.kfs);
+        removeEventHandler(params.dom);
+    }
+
     function addEventHandler(dom, eventName, handler, params){
-        var _self = this;
         var _handler = function(){
-            handler.call(_self, params);
+            handler.call(this, params);
         }
         if(dom.addEventListener){
             dom.addEventListener(eventName, _handler, false);
@@ -322,29 +326,30 @@
             dom['on' + eventName] = _handler;
         }
 
-        if(!events[eventName]){
-            events[eventName] = [];
+        if(!dom._ct_eid){
+            dom._ct_eid = ++eventId;
         }
-        events[eventName].push({dom:dom, handler:_handler, callback:handler});
+        if(!events[dom._ct_eid]){
+            events[dom._ct_eid] = {};
+        }
+        events[dom._ct_eid][eventName] = {dom:dom, handler:_handler, callback:handler, params:params};
     }
 
     function removeEventHandler(dom) {
-        for(var i in events){
-            var _h = events[i];
-            for(var j = _h.length - 1; j >= 0; j--){
-                if(_h[j].dom === dom){
-                    var _fun = _h[j].handler;
-                    if (dom.removeEventListener) {
-                        dom.removeEventListener(i, _fun);
-                    }else if (dom.detachEvent){
-                        dom.detachEvent('on' + i, _fun);
-                    }else{
-                        delete dom['on' + i];
-                    }
-                    _h.splice(j,1);
-                }
+        if(!dom._ct_eid) return;
+        var _e = events[dom._ct_eid];
+        for(var i in _e){
+            var _handler = _e[i].handler;
+            if (dom.removeEventListener) {
+                dom.removeEventListener(i, _handler);
+            }else if (dom.detachEvent){
+                dom.detachEvent('on' + i, _handler);
+            }else{
+                delete dom['on' + i];
             }
         }
+        delete events[dom._ct_eid];
+        delete dom._ct_eid;
     }
 
     function getStyle(dom, param){
@@ -454,18 +459,16 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                _d.style[CT.browserPrefix('Animation')] = 'none';
-                removeEventHandler(_d, endEvent);
+                if(!_d._ct_eid) continue;
+                var _p = events[_d._ct_eid][endEvent];
+                endAnim(_p);
             }
         },
 
         killAll: function(){
             for(var i in events){
-                var _a = events[i];
-                for(var j in _a){
-                    var _d = _a[j].dom;
-                    this.kill(_d, endEvent);
-                }
+                var _p = events[i][endEvent];
+                endAnim(_p);
             }
         }
 
