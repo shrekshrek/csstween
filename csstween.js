@@ -465,9 +465,7 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                if(!_d._ct_eid) continue;
-                var _p = events[_d._ct_eid][endEvent];
-                killTween(_p);
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
             }
         },
 

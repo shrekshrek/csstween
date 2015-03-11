@@ -44,7 +44,7 @@
         console.log("first complete");
     }});
     setTimeout(function(){
-        CT.kill('.b1 #box2');
+//        CT.kill('.b1 #box2');
         CT.to('.b1 #box2', 1, {marginTop:'300px', opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
             console.log("complete2");
             CT.from('.b1 #box2', 1, {marginTop:'100px', opacity:0.5, ease:CT.Quad.easeOut, onEnd:function(){
