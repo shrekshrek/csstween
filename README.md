@@ -31,8 +31,12 @@ ease设置缓动，
 delay设置延时时间，
 repeat设置重复次数，
 yoyo设置重复时反向，
-onComplete设置运动完成的返回函数，
-onCompleteParams设置返回函数的参数
+onStart设置运动开始的返回函数，
+onStartParams设置开始返回函数的参数，
+onIteration设置运动循环中每个运动完成的返回函数，
+onIterationParams设置运动完成返回函数的参数，
+onEnd设置运动完成的返回函数，
+onEndParams设置返回函数的参数
 
 
 缓动类
