@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <script src="../csstween.min.js"></script>
+    <script src="../csstween.js"></script>
     <style>
         body{
             background: #000;
@@ -17,7 +17,7 @@
         }
         #box1{
             background: #f00;
-            margin-top: 400px;
+            margin-top: 100px;
         }
         #box2{
             background: #0f0;
@@ -40,21 +40,44 @@
 
 <script>
 
-    CT.fromTo('.b1 #box1', 1, {marginTop:'300px', opacity:0}, {marginTop:'200px', opacity:1, ease:CT.Quad.easeInOut, onComplete:function(){
+    CT.fromTo('.b1 #box2', 1, {marginTop:'300px', opacity:0}, {marginTop:'200px', opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
         console.log("first complete");
     }});
     setTimeout(function(){
-        CT.kill('.b1 #box1');
-        CT.to('.b1 #box1', 1, {marginTop:'300px', opacity:1, ease:CT.Quad.easeInOut, onComplete:function(){
+        CT.kill('.b1 #box2');
+        CT.to('.b1 #box2', 1, {marginTop:'300px', opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
             console.log("complete2");
-            CT.from('.b1 #box1', 1, {marginTop:'100px', opacity:0.5, ease:CT.Quad.easeOut, onComplete:function(){
+            CT.from('.b1 #box2', 1, {marginTop:'100px', opacity:0.5, ease:CT.Quad.easeOut, onEnd:function(){
                 console.log("complete3");
-                CT.fromTo('.b1 #box1', 2, {marginTop:'500px', opacity:0.5}, {marginTop:'400px', opacity:1, ease:CT.Quad.easeOut, onComplete:function(n){
+                CT.fromTo('.b1 #box2', 2, {marginLeft:'500px', opacity:0.5}, {marginLeft:'400px', opacity:1, ease:CT.Quad.easeOut, onEnd:function(n){
                     console.log("complete",this,n);
                 }, onCompleteParams:[50]});
             }});
         }});
     }, 500);
+
+    CT.fromTo('.b1 #box1', 1, {
+        marginLeft:'300px',
+        transform:'rotate(80deg)',
+        opacity:0
+    }, {
+        marginLeft:'200px',
+        transform:'rotate(300deg)',
+        opacity:1,
+        repeat:6,
+        yoyo:true,
+        delay:1,
+        ease:CT.Quart.easeOut,
+        onStart:function(){
+            console.log("start");
+        },
+        onIteration:function(){
+            console.log("iteration");
+        },
+        onEnd:function(){
+            console.log("complete");
+        }
+    });
 
 </script>
 </body>

@@ -38,9 +38,9 @@
     // --------------------------------------------------------------------检测是否支持,辅助公用方法
     var _isSupported;
     var _browserPrefix = '';
-    var _startEvent = 'animationstart';
-    var _iterationEvent = 'animationiteration';
-    var _endEvent = 'animationend';
+    var startEvent = 'animationstart';
+    var iterationEvent = 'animationiteration';
+    var endEvent = 'animationend';
 
     CT.extend({
         checkSupport:function(){
@@ -54,12 +54,12 @@
                     _isSupported = true;
                     _browserPrefix = _prefixes[i];
                     if(!(_browserPrefix === '' || _browserPrefix === 'Moz')){
-                        _startEvent = _browserPrefix.toLowerCase() + 'Animationstart';
-                        _iterationEvent = _browserPrefix.toLowerCase() + 'Animationiteration';
-                        _endEvent = _browserPrefix.toLowerCase() + 'AnimationEnd';
+                        startEvent = _browserPrefix.toLowerCase() + 'Animationstart';
+                        iterationEvent = _browserPrefix.toLowerCase() + 'Animationiteration';
+                        endEvent = _browserPrefix.toLowerCase() + 'AnimationEnd';
                     }
 
-                    _initKeyframesStyle();
+                    initKeyframesStyle();
 
                     return true;
                 }
@@ -117,14 +117,12 @@
     });
 
 
-
-
     // --------------------------------------------------------------------css rule 相关函数
     var _keyframesRule = window.CSSRule.KEYFRAMES_RULE || window.CSSRule.WEBKIT_KEYFRAMES_RULE || window.CSSRule.MOZ_KEYFRAMES_RULE;
     var _kfsSheet;
     var _kfsRules;
     var _kfsId = 0;
-    function _initKeyframesStyle(){
+    function initKeyframesStyle(){
         var _style = document.createElement('style');
         _style.rel = 'stylesheet';
         _style.type = 'text/css';
@@ -133,7 +131,7 @@
         _kfsRules = _kfsSheet.cssRules || _kfsSheet.rules || [];
     }
 
-    function _getKeyframe(name){
+    function getKeyframe(name){
         for(var i in _kfsRules){
             var _rule = _kfsRules[i];
             if(_rule.type === _keyframesRule && _rule.name === name){
@@ -143,10 +141,10 @@
         return null;
     }
 
-    function _addKeyFrames(name, fromParams, toParams) {
+    function addKeyFrames(name, fromParams, toParams) {
         var _index = _kfsRules.length;
         var _name = 'kfs' + name;
-        var _text = '0%{' + _concatParam(fromParams) + '}' + '100%{' + _concatParam(toParams) + '}';
+        var _text = '0%{' + concatParam(fromParams) + '}' + '100%{' + concatParam(toParams) + '}';
 
         if (_kfsSheet.insertRule) {
             _kfsSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + "{" + _text + "}", _index);
@@ -156,23 +154,16 @@
         return _name;
     }
 
-    function _concatParam(params){
+    function concatParam(params){
         var _text = '';
         for(var i in params){
-            switch(i){
-                case 'transform':
-                    _text += CT.hyphenize(CT.browserPrefix('Transform')) + ':' + params[i] + ';';
-                    break;
-                default:
-                    _text += CT.hyphenize(i) + ':' + params[i] + ';';
-                    break;
-            }
+            _text += CT.hyphenize(i) + ':' + params[i] + ';';
         }
         return _text;
     }
 
-    function _removeKeyFrames(name) {
-        var _obj = _getKeyframe(name);
+    function removeKeyFrames(name) {
+        var _obj = getKeyframe(name);
         if(_obj === null) return;
 
         if (_kfsSheet.deleteRule) {
@@ -183,11 +174,9 @@
     }
 
 
-
     // --------------------------------------------------------------------功能主体
-    var _handlers = {};
-    var _handlerId = 0;
-    function _getElement(dom){
+    var events = {};
+    function getElement(dom){
         if (!(_isSupported || CT.checkSupport())) {
             throw "this browser does not support css animation!!!";
             return;
@@ -211,13 +200,13 @@
         }
     }
 
-    function _tween(target, duration, fromParams, toParams){
+    function tween(target, duration, fromParams, toParams){
         var _dom = target;
 
         var _fromParams = {};
         for(var j in fromParams){
-            var _name = CT.camelize(j);
-            if(_dom.style[_name] !== undefined) _fromParams[_name] = fromParams[j];
+            var _name = checkCssName(_dom, j);
+            if(_name) _fromParams[_name] = fromParams[j];
         }
 
         var _toParams = {};
@@ -226,10 +215,19 @@
         var _delay = '0s';
         var _iteration = 1;
         var _direction = 'normal';
-        var _callback = '';
-        var _callbackParams = [];
+
+        var _startCallback;
+        var _startCallbackParams;
+        var _iterationCallback;
+        var _iterationCallbackParams;
+        var _endCallback;
+        var _endCallbackParams;
+
         for(var i in toParams){
             switch(i){
+                case 'ease':
+                    _ease = 'cubic-bezier' + toParams[i];
+                    break;
                 case 'repeat':
                     if(toParams[i] === -1) _iteration = 'infinite';
                     else _iteration = toParams[i];
@@ -237,39 +235,119 @@
                 case 'yoyo':
                     if(toParams[i]) _direction = 'alternate';
                     break;
-                case 'ease':
-                    _ease = 'cubic-bezier' + toParams[i];
-                    break;
                 case 'delay':
                     _delay = toParams[i] + 's';
                     break;
-                case 'onComplete':
-                    _callback = toParams[i];
+                case 'onStart':
+                    _startCallback = toParams[i];
                     break;
-                case 'onCompleteParams':
-                    _callbackParams = toParams[i];
+                case 'onStartParams':
+                    _startCallbackParams = toParams[i];
+                    break;
+                case 'onIteration':
+                    _iterationCallback = toParams[i];
+                    break;
+                case 'onIterationParams':
+                    _iterationCallbackParams = toParams[i];
+                    break;
+                case 'onEnd':
+                    _endCallback = toParams[i];
+                    break;
+                case 'onEndParams':
+                    _endCallbackParams = toParams[i];
                     break;
                 default:
-                    var _name = CT.camelize(i);
-                    if(_dom.style[_name] !== undefined) _toParams[_name] = toParams[i];
+                    var _name = checkCssName(_dom, i);
+                    if(_name) _toParams[_name] = toParams[i];
                     break;
             }
         }
 
-        var _kfsName = _addKeyFrames(++_kfsId, _fromParams, _toParams);
-        _addEventHandler(_dom, _endEvent, _endHandler, {dom:_dom, callback:_callback, params:_callbackParams}, _kfsName);
+        var _kfsName = addKeyFrames(++_kfsId, _fromParams, _toParams);
+
+        addEventHandler(_dom, startEvent, startHandler, {dom:_dom, callback:_startCallback, params:_startCallbackParams});
+        addEventHandler(_dom, iterationEvent, iterationHandler, {dom:_dom, callback:_iterationCallback, params:_iterationCallbackParams});
+        addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, css:_toParams});
+
         _dom.style[CT.browserPrefix('Animation')] = _kfsName + ' ' + _duration + ' ' + _ease + ' ' + _delay + ' ' + _iteration + ' ' + _direction;
-        _setStyle(_dom, _toParams);
 
     }
 
-    function _endHandler(obj){
-        obj.dom.style[CT.browserPrefix('Animation')] = 'none';
-        _removeEventHandler(obj.dom, _endEvent);
-        obj.callback.apply(obj.dom, obj.params);
+    function checkCssName(dom, cssName){
+        switch(cssName){
+            case 'transform':
+            case 'Transform':
+                var _name = CT.browserPrefix('Transform');
+                return _name;
+                break;
+            default:
+                var _name = CT.camelize(cssName);
+                if(dom.style[_name] !== undefined)
+                    return _name;
+                break;
+        }
+        return null;
     }
 
-    function _getStyle(dom, param){
+    function startHandler(params){
+        if(params.callback)
+            params.callback.apply(params.dom, params.params);
+    }
+
+    function iterationHandler(params){
+        if(params.callback)
+            params.callback.apply(params.dom, params.params);
+    }
+
+    function endHandler(params){
+        setStyle(params.dom, params.css);
+        params.dom.style[CT.browserPrefix('Animation')] = 'none';
+        removeKeyFrames(params.kfs);
+        removeEventHandler(params.dom);
+
+        if(params.callback)
+            params.callback.apply(params.dom, params.params);
+    }
+
+    function addEventHandler(dom, eventName, handler, params){
+        var _self = this;
+        var _handler = function(){
+            handler.call(_self, params);
+        }
+        if(dom.addEventListener){
+            dom.addEventListener(eventName, _handler, false);
+        }else if(dom.attachEvent){
+            dom.attachEvent('on'+eventName, _handler);
+        }else{
+            dom['on' + eventName] = _handler;
+        }
+
+        if(!events[eventName]){
+            events[eventName] = [];
+        }
+        events[eventName].push({dom:dom, handler:_handler, callback:handler});
+    }
+
+    function removeEventHandler(dom) {
+        for(var i in events){
+            var _h = events[i];
+            for(var j = _h.length - 1; j >= 0; j--){
+                if(_h[j].dom === dom){
+                    var _fun = _h[j].handler;
+                    if (dom.removeEventListener) {
+                        dom.removeEventListener(i, _fun);
+                    }else if (dom.detachEvent){
+                        dom.detachEvent('on' + i, _fun);
+                    }else{
+                        delete dom['on' + i];
+                    }
+                    _h.splice(j,1);
+                }
+            }
+        }
+    }
+
+    function getStyle(dom, param){
         var _dom = dom;
         var _param = '';
         switch(param){
@@ -294,141 +372,99 @@
         }
     }
 
-    function _setStyle(dom, params){
+    function setStyle(dom, params){
         var _dom = dom;
         for(var i in params){
             _dom.style[i] = params[i];
         }
     }
 
-    function _addEventHandler(dom, eventName, fun, param, kfs){
-        var _self = this;
-        var _fun = fun;
-        if(param)
-        {
-            _fun = function()
-            {
-                fun.call(_self, param);
-            }
-        }
-        if(dom.addEventListener){
-            dom.addEventListener(eventName, _fun, false);
-        }else if(dom.attachEvent){
-            dom.attachEvent('on'+eventName, _fun);
-        }else{
-            dom['on' + eventName] = _fun;
-        }
-
-        if(!dom._ct_hid){
-            dom._ct_hid = ++_handlerId;
-        }
-        if(!_handlers[dom._ct_hid]){
-            _handlers[dom._ct_hid] = [];
-        }
-        _handlers[dom._ct_hid].push({dom:dom, event:eventName, handler:_fun, callback:fun, kfs:kfs});
-    }
-
-    function _removeEventHandler(dom, eventName) {
-        if(!dom._ct_hid) return;
-        var _h = _handlers[dom._ct_hid];
-        for(var i = _h.length - 1; i >= 0; i--){
-            if(_h[i].event === eventName){
-
-                _removeKeyFrames(_h[i].kfs);
-
-                var _fun = _h[i].handler;
-                if (dom.removeEventListener) {
-                    dom.removeEventListener(eventName, _fun);
-                }else if (dom.detachEvent){
-                    dom.detachEvent('on' + eventName, _fun);
-                }else{
-                    delete dom['on' + eventName];
-                }
-                _h.splice(i,1);
-            }
-        }
-    }
 
 
     // --------------------------------------------------------------------主要方法
     CT.extend({
         get: function(target, param){
-            var _dom = _getElement(target);
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                return _getStyle(_d,param);
+                return getStyle(_d,param);
             }
         },
 
         set: function(target, params){
-            var _dom = _getElement(target);
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                _setStyle(_d, params);
+                var _params = {};
+                for(var j in params){
+                    var _name = checkCssName(_d, j);
+                    if(_name) _params[_name] = params[j];
+                }
+                setStyle(_d, params);
             }
         },
 
         fromTo: function(target, duration, fromParams, toParams){
-            var _dom = _getElement(target);
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                _tween(_d, duration, fromParams, toParams);
+                tween(_d, duration, fromParams, toParams);
             }
         },
 
         from: function(target, duration, fromParams){
-            var _dom = _getElement(target);
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 var _toParams = {};
                 for(var j in fromParams){
                     if(_d.style[j] !== undefined){
-                        _toParams[j] = _getStyle(_d, j);
+                        _toParams[j] = getStyle(_d, j);
                     }else{
                         _toParams[j] = fromParams[j];
                     }
                 }
-                _tween(_d, duration, fromParams, _toParams);
+                tween(_d, duration, fromParams, _toParams);
             }
         },
 
         to: function(target, duration, toParams){
-            var _dom = _getElement(target);
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 var _fromParams = {};
                 for(var j in toParams){
                     if(_d.style[j] !== undefined){
-                        _fromParams[j] = _getStyle(_d, j);
+                        _fromParams[j] = getStyle(_d, j);
                     }else{
                         _fromParams[j] = toParams[j];
                     }
                 }
-                _tween(_d, duration, _fromParams, toParams);
+                tween(_d, duration, _fromParams, toParams);
             }
         },
 
         kill: function(target){
-            var _dom = _getElement(target);
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 _d.style[CT.browserPrefix('Animation')] = 'none';
-                _removeEventHandler(_d, _endEvent);
+                removeEventHandler(_d, endEvent);
             }
         },
 
         killAll: function(){
-            for(var i in _handlers){
-                var _a = _handlers[i];
+            for(var i in events){
+                var _a = events[i];
                 for(var j in _a){
                     var _d = _a[j].dom;
-                    this.kill(_d, _endEvent);
+                    this.kill(_d, endEvent);
                 }
             }
         }
