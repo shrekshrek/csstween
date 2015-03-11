@@ -274,6 +274,13 @@
 
     }
 
+    function killTween(params){
+        setStyle(params.dom, params.css);
+        params.dom.style[CT.browserPrefix('Animation')] = 'none';
+        removeKeyFrames(params.kfs);
+        removeEventHandler(params.dom);
+    }
+
     function checkCssName(dom, cssName){
         switch(cssName){
             case 'transform':
@@ -301,17 +308,10 @@
     }
 
     function endHandler(params){
-        endAnim(params);
+        killTween(params);
 
         if(params.callback)
             params.callback.apply(params.dom, params.params);
-    }
-
-    function endAnim(params){
-        setStyle(params.dom, params.css);
-        params.dom.style[CT.browserPrefix('Animation')] = 'none';
-        removeKeyFrames(params.kfs);
-        removeEventHandler(params.dom);
     }
 
     function addEventHandler(dom, eventName, handler, params){
@@ -332,7 +332,7 @@
         if(!events[dom._ct_eid]){
             events[dom._ct_eid] = {};
         }
-        events[dom._ct_eid][eventName] = {dom:dom, handler:_handler, callback:handler, params:params};
+        events[dom._ct_eid][eventName] = {dom:dom, handler:_handler, params:params};
     }
 
     function removeEventHandler(dom) {
@@ -416,6 +416,8 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
+
                 tween(_d, duration, fromParams, toParams);
             }
         },
@@ -425,6 +427,8 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
+
                 var _toParams = {};
                 for(var j in fromParams){
                     if(_d.style[j] !== undefined){
@@ -442,6 +446,8 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
+
                 var _fromParams = {};
                 for(var j in toParams){
                     if(_d.style[j] !== undefined){
@@ -461,14 +467,14 @@
                 var _d = _dom[i];
                 if(!_d._ct_eid) continue;
                 var _p = events[_d._ct_eid][endEvent];
-                endAnim(_p);
+                killTween(_p);
             }
         },
 
         killAll: function(){
             for(var i in events){
                 var _p = events[i][endEvent];
-                endAnim(_p);
+                killTween(_p);
             }
         }
 
