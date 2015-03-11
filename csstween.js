@@ -316,8 +316,9 @@
 
     function addEventHandler(dom, eventName, handler, params){
         var _handler = function(){
-            handler.call(this, params);
-        }
+            handler.apply(this, [params]);
+        };
+
         if(dom.addEventListener){
             dom.addEventListener(eventName, _handler, false);
         }else if(dom.attachEvent){
@@ -383,7 +384,6 @@
             _dom.style[i] = params[i];
         }
     }
-
 
 
     // --------------------------------------------------------------------主要方法
