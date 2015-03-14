@@ -141,14 +141,10 @@
         return null;
     }
 
-    function addKeyFrames(name, keys) {
+    function addKeyFrames(name, fromParams, toParams) {
         var _index = _kfsRules.length;
         var _name = 'kfs' + name;
-        var _text = '';
-        var _len = keys.length;
-        for(var i in keys){
-            _text += Math.floor(i/(_len-1)*100) + '%{' + concatParam(keys[i]) + '}';
-        }
+        var _text = '0%{' + concatParam(fromParams) + '}' + '100%{' + concatParam(toParams) + '}';
 
         if (_kfsSheet.insertRule) {
             _kfsSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + "{" + _text + "}", _index);
@@ -205,24 +201,17 @@
         }
     }
 
-    function tween(){
-        var _dom = arguments[0];
+    function tween(target, duration, fromParams, toParams){
+        var _dom = target;
 
-        var _len = arguments.length;
-        var _keys = [];
-        for(var k = 2; k < _len-1; k++){
-            var _obj = {};
-            var _obj2 = arguments[k];
-            for(var j in _obj2){
-                var _name = checkCssName(_dom, j);
-                if(_name) _obj[_name] = _obj2[j];
-            }
-            _keys.push(_obj);
+        var _fromParams = {};
+        for(var j in fromParams){
+            var _name = checkCssName(_dom, j);
+            if(_name) _fromParams[_name] = fromParams[j];
         }
 
-        var toParams = arguments[_len - 1];
         var _toParams = {};
-        var _duration = arguments[1] + 's';
+        var _duration = duration + 's';
         var _ease = 'cubic-bezier(0, 0, 1, 1)';
         var _delay = '0s';
         var _iteration = 1;
@@ -275,8 +264,7 @@
             }
         }
 
-        _keys.push(_toParams);
-        var _kfsName = addKeyFrames(++_kfsId, _keys);
+        var _kfsName = addKeyFrames(++_kfsId, _fromParams, _toParams);
 
         addEventHandler(_dom, startEvent, startHandler, {dom:_dom, callback:_startCallback, params:_startCallbackParams});
         addEventHandler(_dom, iterationEvent, iterationHandler, {dom:_dom, callback:_iterationCallback, params:_iterationCallbackParams});
@@ -397,14 +385,6 @@
         }
     }
 
-    function objct2array(obj){
-        var _a = [];
-        for(var i in obj){
-            _a[i] = obj[i];
-        }
-        return _a;
-    }
-
 
     // --------------------------------------------------------------------主要方法
     CT.extend({
@@ -431,73 +411,55 @@
             }
         },
 
-        fromTo: function(){
-            if(arguments.length < 4){
-                throw 'The number of parameters is not enough!';
-            }
-            var _dom = getElement(arguments[0]);
+        fromTo: function(target, duration, fromParams, toParams){
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
 
-                var _a = objct2array(arguments);
-                _a[0] = _d;
-                tween.apply(this, _a);
+                tween(_d, duration, fromParams, toParams);
             }
         },
 
-        from: function(){
-            if(arguments.length < 3){
-                throw 'The number of parameters is not enough!';
-            }
-            var _dom = getElement(arguments[0]);
+        from: function(target, duration, fromParams){
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
 
-                var _fromParams = arguments[arguments.length - 1];
                 var _toParams = {};
-                for(var j in _fromParams){
+                for(var j in fromParams){
                     if(_d.style[j] !== undefined){
                         _toParams[j] = getStyle(_d, j);
                     }else{
-                        _toParams[j] = _fromParams[j];
+                        _toParams[j] = fromParams[j];
                     }
                 }
-
-                var _a = objct2array(arguments);
-                _a[0] = _d;
-                _a.push(_toParams);
-                tween.apply(this, _a);
+                tween(_d, duration, fromParams, _toParams);
             }
         },
 
-        to: function(){
-            if(arguments.length < 3){
-                throw 'The number of parameters is not enough!';
-            }
-            var _dom = getElement(arguments[0]);
+        to: function(target, duration, toParams){
+
+
+
+            var _dom = getElement(target);
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
                 if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
 
                 var _fromParams = {};
-                var _toParams = arguments[arguments.length - 1];
-                for(var j in _toParams){
+                for(var j in toParams){
                     if(_d.style[j] !== undefined){
                         _fromParams[j] = getStyle(_d, j);
                     }else{
-                        _fromParams[j] = _toParams[j];
+                        _fromParams[j] = toParams[j];
                     }
                 }
-
-                var _a = objct2array(arguments);
-                _a[0] = _d;
-                _a.splice(2, 0, _fromParams);
-                tween.apply(this, _a);
+                tween(_d, duration, _fromParams, toParams);
             }
         },
 
