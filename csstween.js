@@ -397,6 +397,14 @@
         }
     }
 
+    function pauseTween(params){
+        params.dom.style[CT.browserPrefix('AnimationPlayState')] = 'paused';
+    }
+
+    function resumeTween(params){
+        params.dom.style[CT.browserPrefix('AnimationPlayState')] = 'running';
+    }
+
     function objct2array(obj){
         var _a = [];
         for(var i in obj){
@@ -514,6 +522,38 @@
             for(var i in events){
                 var _p = events[i][endEvent];
                 killTween(_p);
+            }
+        },
+
+        pause: function(target){
+            var _dom = getElement(target);
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                if(_d._ct_eid) pauseTween(events[_d._ct_eid][endEvent]);
+            }
+        },
+
+        pauseAll: function(){console.log(events);
+            for(var i in events){
+                var _p = events[i][endEvent];
+                pauseTween(_p);
+            }
+        },
+
+        resume: function(target){
+            var _dom = getElement(target);
+            if(_dom.length === undefined) _dom = [_dom];
+            for(var i = 0, _len = _dom.length; i < _len; i++){
+                var _d = _dom[i];
+                if(_d._ct_eid) resumeTween(events[_d._ct_eid][endEvent]);
+            }
+        },
+
+        resumeAll: function(){
+            for(var i in events){
+                var _p = events[i][endEvent];
+                resumeTween(_p);
             }
         }
 

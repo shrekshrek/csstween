@@ -23,6 +23,14 @@ CT.kill(target);
 
 CT.killAll();
 
+CT.pause(target);
+
+CT.pauseAll();
+
+CT.resume(target);
+
+CT.resumeAll();
+
 param为字符串，
 Params为数组，
 
