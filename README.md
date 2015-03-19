@@ -31,7 +31,7 @@ CT.resume(target);
 
 CT.resumeAll();
 
-param为字符串，
+param为字符串，  
 Params为数组，
 
 其中几个属性比较特殊:
