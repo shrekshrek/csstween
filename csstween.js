@@ -147,7 +147,10 @@
         var _text = '';
         var _len = keys.length;
         for(var i in keys){
-            _text += Math.floor(i/(_len-1)*100) + '%{' + concatParam(keys[i]) + '}';
+            var _key;
+            if(keys[i].key !== undefined) _key = keys[i].key;
+            else _key = Math.floor(i/(_len-1)*100);
+            _text += _key + '%{' + concatParam(keys[i]) + '}';
         }
 
         if (_kfsSheet.insertRule) {
@@ -161,7 +164,7 @@
     function concatParam(params){
         var _text = '';
         for(var i in params){
-            _text += CT.hyphenize(i) + ':' + params[i] + ';';
+            if(i !== 'key') _text += CT.hyphenize(i) + ':' + params[i] + ';';
         }
         return _text;
     }
@@ -214,8 +217,15 @@
             var _obj = {};
             var _obj2 = arguments[k];
             for(var j in _obj2){
-                var _name = checkCssName(_dom, j);
-                if(_name) _obj[_name] = _obj2[j];
+                switch(j){
+                    case 'key':
+                        _obj[j] = _obj2[j]
+                        break;
+                    default:
+                        var _name = checkCssName(_dom, j);
+                        if(_name) _obj[_name] = _obj2[j];
+                        break;
+                }
             }
             _keys.push(_obj);
         }
@@ -267,6 +277,9 @@
                     break;
                 case 'onEndParams':
                     _endCallbackParams = toParams[i];
+                    break;
+                case 'key':
+                    _toParams[i] = toParams[i]
                     break;
                 default:
                     var _name = checkCssName(_dom, i);
@@ -534,7 +547,7 @@
             }
         },
 
-        pauseAll: function(){console.log(events);
+        pauseAll: function(){
             for(var i in events){
                 var _p = events[i][endEvent];
                 pauseTween(_p);

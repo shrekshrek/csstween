@@ -40,7 +40,7 @@
 
 <script>
 
-    CT.fromTo('.b1 #box2', 1, {marginTop:'300px', opacity:0}, {marginTop:'200px', opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
+    CT.fromTo('.b1 #box2', 1, {marginTop:'300px', opacity:0}, {key:80, marginTop:'200px', opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
         console.log("first complete");
     }});
     setTimeout(function(){
@@ -61,6 +61,7 @@
         transform:'rotate(80deg)',
         opacity:0
     }, {
+        key:20,
         marginLeft:'400px',
         transform:'rotate(320deg)',
         opacity:1
