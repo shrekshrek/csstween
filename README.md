@@ -45,6 +45,7 @@ onIteration设置运动循环中每个运动完成的返回函数，
 onIterationParams设置运动完成返回函数的参数，
 onEnd设置运动完成的返回函数，
 onEndParams设置返回函数的参数
+key设置关键帧位置[0,100]
 
 
 缓动类
