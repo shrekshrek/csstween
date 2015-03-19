@@ -293,7 +293,7 @@
 
         addEventHandler(_dom, startEvent, startHandler, {dom:_dom, callback:_startCallback, params:_startCallbackParams});
         addEventHandler(_dom, iterationEvent, iterationHandler, {dom:_dom, callback:_iterationCallback, params:_iterationCallbackParams});
-        addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, css:_toParams});
+        addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, css:_iteration%2===0?_keys[0]:_toParams});
 
         _dom.style[CT.browserPrefix('Animation')] = _kfsName + ' ' + _duration + ' ' + _ease + ' ' + _delay + ' ' + _iteration + ' ' + _direction;
 
@@ -460,7 +460,7 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
 
                 var _a = objct2array(arguments);
                 _a[0] = _d;
@@ -476,7 +476,7 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
 
                 var _fromParams = arguments[arguments.length - 1];
                 var _toParams = {};
@@ -503,7 +503,7 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
 
                 var _fromParams = {};
                 var _toParams = arguments[arguments.length - 1];
@@ -527,7 +527,7 @@
             if(_dom.length === undefined) _dom = [_dom];
             for(var i = 0, _len = _dom.length; i < _len; i++){
                 var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent]);
+                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
             }
         },
 
