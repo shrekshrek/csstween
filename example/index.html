@@ -40,16 +40,16 @@
 
 <script>
 
-    CT.fromTo('.b1 #box2', 1, {marginTop:'300px', opacity:0}, {marginTop:'200px', opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
+    CT.fromTo('.b1 #box2', 1, {marginTop:300, opacity:0}, {marginTop:200, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
         console.log("first complete");
     }});
     setTimeout(function(){
 //        CT.kill('.b1 #box2');
-        CT.to('.b1 #box2', 1, {marginTop:'300px', opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
+        CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
             console.log("complete2");
-            CT.from('.b1 #box2', 1, {marginTop:'100px', opacity:0.5, ease:CT.Quad.easeOut, onEnd:function(){
+            CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.easeOut, onEnd:function(){
                 console.log("complete3");
-                CT.fromTo('.b1 #box2', 2, {marginLeft:'500px', opacity:0.5}, {marginLeft:'400px', opacity:1, ease:CT.Quad.easeOut, onEnd:function(n){
+                CT.fromTo('.b1 #box2', 2, {marginLeft:500, opacity:0.5}, {marginLeft:400, opacity:1, ease:CT.Quad.easeOut, onEnd:function(n){
                     console.log("complete",this,n);
                 }, onEndParams:[50]});
             }});
@@ -57,16 +57,16 @@
     }, 500);
 
     CT.fromTo('.b1 #box1', 1, {
-        marginLeft:'300px',
+        marginLeft:300,
         transform:'rotate(80deg)',
         opacity:0
     }, {
         key:20,
-        marginLeft:'400px',
+        marginLeft:400,
         transform:'rotate(320deg)',
         opacity:1
     },{
-        marginLeft:'200px',
+        marginLeft:200,
         transform:'rotate(300deg)',
         opacity:0.5,
         repeat:5,
@@ -97,9 +97,7 @@
         CT.resume('.b1 #box2');
     }, 4000);
 
-
-
-
+    
 </script>
 </body>
 </html>

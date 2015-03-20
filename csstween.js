@@ -223,7 +223,7 @@
                         break;
                     default:
                         var _name = checkCssName(_dom, j);
-                        if(_name) _obj[_name] = _obj2[j];
+                        if(_name) _obj[_name] = checkCssValue(_name, _obj2[j]);
                         break;
                 }
             }
@@ -283,7 +283,7 @@
                     break;
                 default:
                     var _name = checkCssName(_dom, i);
-                    if(_name) _toParams[_name] = toParams[i];
+                    if(_name) _toParams[_name] = checkCssValue(_name, toParams[i]);
                     break;
             }
         }
@@ -320,6 +320,16 @@
                 break;
         }
         return null;
+    }
+
+    var specialCssNames = ['fontWeight','lineHeight','opacity','zoom'];
+    function checkCssValue(cssName, cssValue){
+        for(var i in specialCssNames){
+            if(cssName === i){
+                return cssValue;
+            }
+        }
+        return typeof(cssValue) === 'number'?cssValue + 'px':cssValue;
     }
 
     function startHandler(params){
