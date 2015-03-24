@@ -155,7 +155,7 @@
         }
 
         if (_ctSheet.insertRule) {
-            _ctSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + "{" + _text + "}", _index);
+            _ctSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + '{' + _text + '}', _index);
         } else if (_ctSheet.addRule) {
             _ctSheet.addRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes')) + ' ' + _name, _text, _index);
         }
@@ -248,7 +248,7 @@
             for(var j in _obj2){
                 switch(j){
                     case 'key':
-                        _obj[j] = _obj2[j]
+                        _obj[j] = _obj2[j];
                         break;
                     default:
                         var _name = checkCssName(_dom, j);
