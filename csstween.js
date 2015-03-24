@@ -59,7 +59,7 @@
                         endEvent = _browserPrefix.toLowerCase() + 'AnimationEnd';
                     }
 
-                    initKeyframesStyle();
+                    initCtStyle();
 
                     return true;
                 }
@@ -119,31 +119,32 @@
 
     // --------------------------------------------------------------------css rule 相关函数
     var _keyframesRule = window.CSSRule.KEYFRAMES_RULE || window.CSSRule.WEBKIT_KEYFRAMES_RULE || window.CSSRule.MOZ_KEYFRAMES_RULE;
-    var _kfsSheet;
-    var _kfsRules;
-    var _kfsId = 0;
-    function initKeyframesStyle(){
+    var _styleRule = window.CSSRule.STYLE_RULE || window.CSSRule.WEBKIT_STYLE_RULE || window.CSSRule.MOZ_STYLE_RULE;
+    var _ctSheet;
+    var _ctRules;
+    var _ctId = 0;
+    function initCtStyle(){
         var _style = document.createElement('style');
         _style.rel = 'stylesheet';
         _style.type = 'text/css';
         document.getElementsByTagName('head')[0].appendChild(_style);
-        _kfsSheet = _style.sheet;
-        _kfsRules = _kfsSheet.cssRules || _kfsSheet.rules || [];
+        _ctSheet = _style.sheet;
+        _ctRules = _ctSheet.cssRules || _ctSheet.rules || [];
     }
 
-    function getKeyframe(name){
-        for(var i in _kfsRules){
-            var _rule = _kfsRules[i];
-            if(_rule.type === _keyframesRule && _rule.name === name){
+    function getRule(name){
+        for(var i in _ctRules){
+            var _rule = _ctRules[i];
+            if((_rule.type === _keyframesRule && _rule.name === name) || (_rule.type === _styleRule && _rule.selectorText === name)){
                 return {rule:_rule, index:i};
             }
         }
         return null;
     }
 
-    function addKeyFrames(name, keys) {
-        var _index = _kfsRules.length;
-        var _name = 'kfs' + name;
+    function addKfsRule(name, keys) {
+        var _index = _ctRules.length;
+        var _name = 'ct_kfs_' + name;
         var _text = '';
         var _len = keys.length;
         for(var i in keys){
@@ -153,10 +154,10 @@
             _text += _key + '%{' + concatParam(keys[i]) + '}';
         }
 
-        if (_kfsSheet.insertRule) {
-            _kfsSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + "{" + _text + "}", _index);
-        } else if (_kfsSheet.addRule) {
-            _kfsSheet.addRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes')) + ' ' + _name, _text, _index);
+        if (_ctSheet.insertRule) {
+            _ctSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + "{" + _text + "}", _index);
+        } else if (_ctSheet.addRule) {
+            _ctSheet.addRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes')) + ' ' + _name, _text, _index);
         }
         return _name;
     }
@@ -169,17 +170,45 @@
         return _text;
     }
 
-    function removeKeyFrames(name) {
-        var _obj = getKeyframe(name);
+    function removeRule(name) {
+        var _obj = getRule(name);
         if(_obj === null) return;
 
-        if (_kfsSheet.deleteRule) {
-            _kfsSheet.deleteRule(_obj.index);
-        } else if (_kfsSheet.removeRule) {
-            _kfsSheet.removeRule(_obj.index);
+        if (_ctSheet.deleteRule) {
+            _ctSheet.deleteRule(_obj.index);
+        } else if (_ctSheet.removeRule) {
+            _ctSheet.removeRule(_obj.index);
         }
     }
 
+    // --------------------------------------------------------------------class 相关函数
+    function addAnimRule(name, txt) {
+        var _index = _ctRules.length;
+        var _name = 'ct_anim_' + name;
+        var _text = CT.hyphenize(CT.browserPrefix('Animation'))+ ':' + txt + ";";
+        if (_ctSheet.insertRule) {
+            _ctSheet.insertRule('.' + _name + '{' + _text + "}", _index);
+        } else if (_ctSheet.addRule) {
+            _ctSheet.addRule('.' + _name, _text, _index);
+        }
+        return _name;
+    }
+
+    function hasClass( dom, className ){
+        return !!dom.className.match( new RegExp( "(\\s|^)" + className + "(\\s|$)") );
+    }
+
+    function addClass( dom, className ){
+        if( !hasClass( dom, className ) ){
+            dom.className += " " + className;
+        }
+    }
+
+    function removeClass( dom, className ){
+        //if( hasClass( dom, className ) ){
+            dom.className = dom.className.replace( new RegExp( "(\\s|^)" + className + "(\\s|$)" )," " );
+        //}
+    }
 
     // --------------------------------------------------------------------功能主体
     var events = {};
@@ -279,7 +308,7 @@
                     _endCallbackParams = toParams[i];
                     break;
                 case 'key':
-                    _toParams[i] = toParams[i]
+                    _toParams[i] = toParams[i];
                     break;
                 default:
                     var _name = checkCssName(_dom, i);
@@ -289,20 +318,23 @@
         }
 
         _keys.push(_toParams);
-        var _kfsName = addKeyFrames(++_kfsId, _keys);
+        var _id = ++_ctId;
+        var _kfsName = addKfsRule(_id, _keys);
+        var _animName = addAnimRule(_id, _kfsName + ' ' + _duration + ' ' + _ease + ' ' + _delay + ' ' + _iteration + ' ' + _direction);
 
         addEventHandler(_dom, startEvent, startHandler, {dom:_dom, callback:_startCallback, params:_startCallbackParams});
         addEventHandler(_dom, iterationEvent, iterationHandler, {dom:_dom, callback:_iterationCallback, params:_iterationCallbackParams});
-        addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, css:_iteration%2===0?_keys[0]:_toParams});
+        addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, anim:_animName, css:_iteration%2===0?_keys[0]:_toParams});
 
-        _dom.style[CT.browserPrefix('Animation')] = _kfsName + ' ' + _duration + ' ' + _ease + ' ' + _delay + ' ' + _iteration + ' ' + _direction;
+        addClass(_dom, _animName);
 
     }
 
     function killTween(params){
         setStyle(params.dom, params.css);
-        params.dom.style[CT.browserPrefix('Animation')] = 'none';
-        removeKeyFrames(params.kfs);
+        removeClass(params.dom, params.anim);
+        removeRule(params.kfs);
+        removeRule('.'+params.anim);
         removeEventHandler(params.dom);
     }
 
@@ -325,7 +357,7 @@
     var specialCssNames = ['fontWeight','lineHeight','opacity','zoom'];
     function checkCssValue(cssName, cssValue){
         for(var i in specialCssNames){
-            if(cssName === i){
+            if(cssName === specialCssNames[i]){
                 return cssValue;
             }
         }
