@@ -195,7 +195,8 @@
     }
 
     function hasClass( dom, className ){
-        return !!dom.className.match( new RegExp( "(\\s|^)" + className + "(\\s|$)") );
+        return !!dom.className.match(new RegExp("(\\s|^)" + className));
+        //return !!dom.className.match( new RegExp( "(\\s|^)" + className + "(\\s|$)") );
     }
 
     function addClass( dom, className ){
@@ -206,7 +207,7 @@
 
     function removeClass( dom, className ){
         //if( hasClass( dom, className ) ){
-            dom.className = dom.className.replace( new RegExp( "(\\s|^)" + className + "(\\s|$)" )," " );
+            dom.className = dom.className.replace(new RegExp("(\\s|^)" + className),"");
         //}
     }
 
