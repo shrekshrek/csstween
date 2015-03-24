@@ -28,93 +28,72 @@
         return this;
     };
 
-    // --------------------------------------------------------------------extend
-    CT.extend = function(obj) {
-        for (var prop in obj) {
-            this[prop] = obj[prop];
+    // --------------------------------------------------------------------辅助方法
+    function extend(obj, obj2) {
+        for (var prop in obj2) {
+            obj[prop] = obj2[prop];
         }
     };
 
-    // --------------------------------------------------------------------检测是否支持,辅助公用方法
+    function each(obj, callback) {
+        if(obj.length === undefined){
+            callback.call(obj, 0, obj);
+        }else{
+            for (var i = 0; i < obj.length; i++){
+                callback.call(obj[i], i, obj[i]);
+            }
+        }
+    };
+
+    function hyphenize(str){
+        return str.replace( /([A-Z])/g, "-$1" ).toLowerCase();
+    };
+
+    function camelize(str){
+        return str.replace(/\-(\w)/g, function(all, letter){
+            return letter.toUpperCase();
+        });
+    };
+
+
+    // --------------------------------------------------------------------检测是否支持,浏览器补全方法
     var _isSupported;
     var _browserPrefix = '';
     var startEvent = 'animationstart';
     var iterationEvent = 'animationiteration';
     var endEvent = 'animationend';
 
-    CT.extend({
-        checkSupport:function(){
-            if(_isSupported !== undefined) return _isSupported;
+    function checkSupport(){
+        if(_isSupported !== undefined) return _isSupported;
 
-            var _d = document.createElement('div');
-            var _prefixes = ['', 'Webkit', 'Moz', 'O', 'Ms'];
+        var _d = document.createElement('div');
+        var _prefixes = ['', 'Webkit', 'Moz', 'O', 'Ms'];
 
-            for (var i in _prefixes) {
-                if ((_prefixes[i] + 'Animation') in _d.style) {
-                    _isSupported = true;
-                    _browserPrefix = _prefixes[i];
-                    if(!(_browserPrefix === '' || _browserPrefix === 'Moz')){
-                        startEvent = _browserPrefix.toLowerCase() + 'Animationstart';
-                        iterationEvent = _browserPrefix.toLowerCase() + 'Animationiteration';
-                        endEvent = _browserPrefix.toLowerCase() + 'AnimationEnd';
-                    }
-
-                    initCtStyle();
-
-                    return true;
+        for (var i in _prefixes) {
+            if ((_prefixes[i] + 'Animation') in _d.style) {
+                _isSupported = true;
+                _browserPrefix = _prefixes[i];
+                if(!(_browserPrefix === '' || _browserPrefix === 'Moz')){
+                    startEvent = _browserPrefix.toLowerCase() + 'Animationstart';
+                    iterationEvent = _browserPrefix.toLowerCase() + 'Animationiteration';
+                    endEvent = _browserPrefix.toLowerCase() + 'AnimationEnd';
                 }
+
+                initCtStyle();
+
+                return true;
             }
-            return false;
-        },
-
-        browserPrefix:function(str){
-            if (arguments.length) {
-                return _browserPrefix + str;
-            } else {
-                return _browserPrefix;
-            }
-        },
-
-        hyphenize:function(str){
-            return str.replace( /([A-Z])/g, "-$1" ).toLowerCase();
-        },
-
-        camelize:function(str){
-            return str.replace(/\-(\w)/g, function(all, letter){
-                return letter.toUpperCase();
-            });
         }
+        return false;
+    };
 
-    });
-
-    // --------------------------------------------------------------------缓动选项
-    CT.extend({
-        Linear: {
-            easeIn:'(0, 0, 1, 1)',
-            easeOut:'(0, 0, 1, 1)',
-            easeInOut:'(0, 0, 1, 1)'
-        },
-        Sine: {
-            easeIn:'(0.35, 0, 1, 1)',
-            easeOut:'(0, 0, 0.65, 1)',
-            easeInOut:'(0.35, 0, 0.65, 1)'
-        },
-        Quad: {
-            easeIn:'(0.45, 0, 1, 1)',
-            easeOut:'(0, 0, 0.55, 1)',
-            easeInOut:'(0.45, 0, 0.55, 1)'
-        },
-        Quart: {
-            easeIn:'(0.75, 0, 1, 1)',
-            easeOut:'(0, 0, 0.25, 1)',
-            easeInOut:'(0.75, 0, 0.25, 1)'
-        },
-        Expo: {
-            easeIn:'(1, 0, 1, 1)',
-            easeOut:'(0, 0, 0, 1)',
-            easeInOut:'(1, 0, 0, 1)'
+    function browserPrefix(str){
+        if (arguments.length) {
+            return _browserPrefix + str;
+        } else {
+            return _browserPrefix;
         }
-    });
+    };
 
 
     // --------------------------------------------------------------------css rule 相关函数
@@ -155,9 +134,9 @@
         }
 
         if (_ctSheet.insertRule) {
-            _ctSheet.insertRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes'))+ ' ' + _name + '{' + _text + '}', _index);
+            _ctSheet.insertRule('@' + hyphenize(browserPrefix('Keyframes'))+ ' ' + _name + '{' + _text + '}', _index);
         } else if (_ctSheet.addRule) {
-            _ctSheet.addRule('@' + CT.hyphenize(CT.browserPrefix('Keyframes')) + ' ' + _name, _text, _index);
+            _ctSheet.addRule('@' + hyphenize(browserPrefix('Keyframes')) + ' ' + _name, _text, _index);
         }
         return _name;
     }
@@ -165,7 +144,7 @@
     function concatParam(params){
         var _text = '';
         for(var i in params){
-            if(i !== 'key') _text += CT.hyphenize(i) + ':' + params[i] + ';';
+            if(i !== 'key') _text += hyphenize(i) + ':' + params[i] + ';';
         }
         return _text;
     }
@@ -185,7 +164,7 @@
     function addAnimRule(name, txt) {
         var _index = _ctRules.length;
         var _name = 'ct_anim_' + name;
-        var _text = CT.hyphenize(CT.browserPrefix('Animation'))+ ':' + txt + ";";
+        var _text = hyphenize(browserPrefix('Animation'))+ ':' + txt + ";";
         if (_ctSheet.insertRule) {
             _ctSheet.insertRule('.' + _name + '{' + _text + "}", _index);
         } else if (_ctSheet.addRule) {
@@ -215,7 +194,7 @@
     var events = {};
     var eventId = 0;
     function getElement(dom){
-        if (!(_isSupported || CT.checkSupport())) {
+        if (!(_isSupported || checkSupport())) {
             throw "this browser does not support css animation!!!";
             return;
         }
@@ -343,11 +322,11 @@
         switch(cssName){
             case 'transform':
             case 'Transform':
-                var _name = CT.browserPrefix('Transform');
+                var _name = browserPrefix('Transform');
                 return _name;
                 break;
             default:
-                var _name = CT.camelize(cssName);
+                var _name = camelize(cssName);
                 if(dom.style[_name] !== undefined)
                     return _name;
                 break;
@@ -426,10 +405,10 @@
         var _param = '';
         switch(param){
             case 'transform':
-                _param = CT.browserPrefix('Transform');
+                _param = browserPrefix('Transform');
                 break;
             default:
-                _param = CT.camelize(param);
+                _param = camelize(param);
                 break;
         }
 
@@ -438,7 +417,7 @@
         }else if(_dom.currentStyle){
             return _dom.currentStyle[_param];
         }else if(document.defaultView && document.defaultView.getComputedStyle){
-            var _p = CT.hyphenize(_param);
+            var _p = hyphenize(_param);
             var _s = document.defaultView.getComputedStyle(_dom,'');
             return _s && _s.getPropertyValue(_p);
         }else{
@@ -454,11 +433,11 @@
     }
 
     function pauseTween(params){
-        params.dom.style[CT.browserPrefix('AnimationPlayState')] = 'paused';
+        params.dom.style[browserPrefix('AnimationPlayState')] = 'paused';
     }
 
     function resumeTween(params){
-        params.dom.style[CT.browserPrefix('AnimationPlayState')] = 'running';
+        params.dom.style[browserPrefix('AnimationPlayState')] = 'running';
     }
 
     function objct2array(obj){
@@ -471,107 +450,96 @@
 
 
     // --------------------------------------------------------------------主要方法
-    CT.extend({
+    extend(CT, {
         get: function(target, param){
             var _dom = getElement(target);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
-                return getStyle(_d,param);
-            }
+            each(_dom, function(index, obj){
+                return getStyle(obj, param);
+            });
         },
 
         set: function(target, params){
             var _dom = getElement(target);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
+            each(_dom, function(index, obj){
                 var _params = {};
                 for(var j in params){
-                    var _name = checkCssName(_d, j);
+                    var _name = checkCssName(obj, j);
                     if(_name) _params[_name] = params[j];
                 }
-                setStyle(_d, params);
-            }
+                setStyle(obj, params);
+            });
         },
 
         fromTo: function(){
             if(arguments.length < 4){
                 throw 'The number of parameters is not enough!';
             }
-            var _dom = getElement(arguments[0]);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
-
-                var _a = objct2array(arguments);
-                _a[0] = _d;
+            var args = arguments;
+            var _dom = getElement(args[0]);
+            each(_dom, function(index, obj){
+                if(obj._ct_eid) killTween(events[obj._ct_eid][endEvent].params);
+                var _a = objct2array(args);
+                _a[0] = obj;
                 tween.apply(this, _a);
-            }
+            });
         },
 
         from: function(){
             if(arguments.length < 3){
                 throw 'The number of parameters is not enough!';
             }
-            var _dom = getElement(arguments[0]);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
-
-                var _fromParams = arguments[arguments.length - 1];
+            var args = arguments;
+            var _dom = getElement(args[0]);
+            each(_dom, function(index, obj){
+                if(obj._ct_eid) killTween(events[obj._ct_eid][endEvent].params);
+                var _fromParams = args[args.length - 1];
                 var _toParams = {};
                 for(var j in _fromParams){
-                    if(_d.style[j] !== undefined){
-                        _toParams[j] = getStyle(_d, j);
+                    if(obj.style[j] !== undefined){
+                        _toParams[j] = getStyle(obj, j);
                     }else{
                         _toParams[j] = _fromParams[j];
                     }
                 }
 
-                var _a = objct2array(arguments);
-                _a[0] = _d;
+                var _a = objct2array(args);
+                _a[0] = obj;
                 _a.push(_toParams);
                 tween.apply(this, _a);
-            }
+            });
         },
 
         to: function(){
             if(arguments.length < 3){
                 throw 'The number of parameters is not enough!';
             }
-            var _dom = getElement(arguments[0]);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
+            var args = arguments;
+            var _dom = getElement(args[0]);
+            each(_dom, function(index, obj){
+                if(obj._ct_eid) killTween(events[obj._ct_eid][endEvent].params);
 
                 var _fromParams = {};
-                var _toParams = arguments[arguments.length - 1];
+                var _toParams = args[args.length - 1];
                 for(var j in _toParams){
-                    if(_d.style[j] !== undefined){
-                        _fromParams[j] = getStyle(_d, j);
+                    if(obj.style[j] !== undefined){
+                        _fromParams[j] = getStyle(obj, j);
                     }else{
                         _fromParams[j] = _toParams[j];
                     }
                 }
 
-                var _a = objct2array(arguments);
-                _a[0] = _d;
+                var _a = objct2array(args);
+                _a[0] = obj;
                 _a.splice(2, 0, _fromParams);
                 tween.apply(this, _a);
-            }
+            });
         },
 
         kill: function(target){
             var _dom = getElement(target);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
-                if(_d._ct_eid) killTween(events[_d._ct_eid][endEvent].params);
-            }
+            each(_dom, function(index, obj){
+                if(obj._ct_eid) killTween(events[obj._ct_eid][endEvent].params);
+            });
         },
 
         killAll: function(){
@@ -583,11 +551,9 @@
 
         pause: function(target){
             var _dom = getElement(target);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
-                if(_d._ct_eid) pauseTween(events[_d._ct_eid][endEvent].params);
-            }
+            each(_dom, function(index, obj){
+                if(obj._ct_eid) pauseTween(events[obj._ct_eid][endEvent].params);
+            });
         },
 
         pauseAll: function(){
@@ -599,11 +565,9 @@
 
         resume: function(target){
             var _dom = getElement(target);
-            if(_dom.length === undefined) _dom = [_dom];
-            for(var i = 0, _len = _dom.length; i < _len; i++){
-                var _d = _dom[i];
-                if(_d._ct_eid) resumeTween(events[_d._ct_eid][endEvent].params);
-            }
+            each(_dom, function(index, obj){
+                if(obj._ct_eid) resumeTween(events[obj._ct_eid][endEvent].params);
+            });
         },
 
         resumeAll: function(){
@@ -613,6 +577,35 @@
             }
         }
 
+    });
+
+    // --------------------------------------------------------------------缓动选项
+    extend(CT, {
+        Linear: {
+            easeIn:'(0, 0, 1, 1)',
+            easeOut:'(0, 0, 1, 1)',
+            easeInOut:'(0, 0, 1, 1)'
+        },
+        Sine: {
+            easeIn:'(0.35, 0, 1, 1)',
+            easeOut:'(0, 0, 0.65, 1)',
+            easeInOut:'(0.35, 0, 0.65, 1)'
+        },
+        Quad: {
+            easeIn:'(0.45, 0, 1, 1)',
+            easeOut:'(0, 0, 0.55, 1)',
+            easeInOut:'(0.45, 0, 0.55, 1)'
+        },
+        Quart: {
+            easeIn:'(0.75, 0, 1, 1)',
+            easeOut:'(0, 0, 0.25, 1)',
+            easeInOut:'(0.75, 0, 0.25, 1)'
+        },
+        Expo: {
+            easeIn:'(1, 0, 1, 1)',
+            easeOut:'(0, 0, 0, 1)',
+            easeInOut:'(1, 0, 0, 1)'
+        }
     });
 
     return CT;

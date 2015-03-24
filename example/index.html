@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <script src="../csstween.min.js"></script>
+    <script src="../csstween.js"></script>
     <style>
         body{
             background: #000;
@@ -40,9 +40,10 @@
 
 <script>
 
-    CT.fromTo('.b1 #box2', 1, {marginTop:300, opacity:0}, {marginTop:200, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
+    CT.fromTo('.box', 1, {marginLeft:300, opacity:0}, {marginLeft:200, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
         console.log("first complete");
     }});
+
     setTimeout(function(){
 //        CT.kill('.b1 #box2');
         CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
@@ -55,7 +56,7 @@
             }});
         }});
     }, 500);
-
+//
     CT.fromTo('.b1 #box1', 1, {
         marginLeft:300,
         transform:'rotate(80deg)',
