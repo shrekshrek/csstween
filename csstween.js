@@ -33,7 +33,7 @@
         for (var prop in obj2) {
             obj[prop] = obj2[prop];
         }
-    };
+    }
 
     function each(obj, callback) {
         if(obj.length === undefined){
@@ -43,18 +43,25 @@
                 callback.call(obj[i], i, obj[i]);
             }
         }
-    };
+    }
 
     function hyphenize(str){
         return str.replace( /([A-Z])/g, "-$1" ).toLowerCase();
-    };
+    }
 
     function camelize(str){
         return str.replace(/\-(\w)/g, function(all, letter){
             return letter.toUpperCase();
         });
-    };
+    }
 
+    function objct2array(obj){
+        var _a = [];
+        for(var i in obj){
+            _a[i] = obj[i];
+        }
+        return _a;
+    }
 
     // --------------------------------------------------------------------检测是否支持,浏览器补全方法
     var _isSupported;
@@ -85,7 +92,7 @@
             }
         }
         return false;
-    };
+    }
 
     function browserPrefix(str){
         if (arguments.length) {
@@ -93,7 +100,7 @@
         } else {
             return _browserPrefix;
         }
-    };
+    }
 
 
     // --------------------------------------------------------------------css rule 相关函数
@@ -160,7 +167,6 @@
         }
     }
 
-    // --------------------------------------------------------------------class 相关函数
     function addAnimRule(name, txt) {
         var _index = _ctRules.length;
         var _name = 'ct_anim_' + name;
@@ -173,6 +179,8 @@
         return _name;
     }
 
+
+    // --------------------------------------------------------------------class 相关函数
     function hasClass( dom, className ){
         return !!dom.className.match(new RegExp("(\\s|^)" + className));
         //return !!dom.className.match( new RegExp( "(\\s|^)" + className + "(\\s|$)") );
@@ -438,14 +446,6 @@
 
     function resumeTween(params){
         params.dom.style[browserPrefix('AnimationPlayState')] = 'running';
-    }
-
-    function objct2array(obj){
-        var _a = [];
-        for(var i in obj){
-            _a[i] = obj[i];
-        }
-        return _a;
     }
 
 
