@@ -7,15 +7,7 @@
  **/
 
 (function(root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['exports'], function(exports) {
-            root.CT = root.CssTween = factory(root, exports);
-        });
-    } else if (typeof exports !== 'undefined') {
-        factory(root, exports);
-    } else {
-        root.CT = root.CssTween = factory(root, {});
-    }
+    root.CT = root.CssTween = factory(root, {});
 
 }(this, function(root, CT) {
 
