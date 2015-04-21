@@ -462,9 +462,9 @@
                 var _params = {};
                 for(var j in params){
                     var _name = checkCssName(obj, j);
-                    if(_name) _params[_name] = params[j];
+                    if(_name) _params[_name] = checkCssValue(_name, params[j]);
                 }
-                setStyle(obj, params);
+                setStyle(obj, _params);
             });
         },
 
