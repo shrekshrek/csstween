@@ -1,6 +1,6 @@
 /*!
- * VERSION: 0.2.0
- * DATE: 2015-03-11
+ * VERSION: 0.3.0
+ * DATE: 2015-04-22
  * GIT:https://github.com/shrekshrek/csstween
  *
  * @author: Shrek.wang, shrekshrek@gmail.com
@@ -19,7 +19,7 @@
 
     var previousCssTween = root.CT;
 
-    CT.VERSION = '0.2.0';
+    CT.VERSION = '0.3.0';
 
     CT.noConflict = function() {
         root.CT = previousCssTween;
@@ -107,6 +107,7 @@
     var _ctSheet;
     var _ctRules;
     var _ctId = 0;
+
     function initCtStyle(){
         var _style = document.createElement('style');
         _style.rel = 'stylesheet';
@@ -114,6 +115,7 @@
         document.getElementsByTagName('head')[0].appendChild(_style);
         _ctSheet = _style.sheet;
         _ctRules = _ctSheet.cssRules || _ctSheet.rules || [];
+
     }
 
     function getRule(name){
@@ -126,32 +128,13 @@
         return null;
     }
 
-    function addKfsRule(name, keys) {
+    function addRule(ruleName, ruleTxt){
         var _index = _ctRules.length;
-        var _name = 'ct_kfs_' + name;
-        var _text = '';
-        var _len = keys.length;
-        for(var i in keys){
-            var _key;
-            if(keys[i].key !== undefined) _key = keys[i].key;
-            else _key = Math.floor(i/(_len-1)*100);
-            _text += _key + '%{' + concatParam(keys[i]) + '}';
-        }
-
         if (_ctSheet.insertRule) {
-            _ctSheet.insertRule('@' + hyphenize(browserPrefix('Keyframes'))+ ' ' + _name + '{' + _text + '}', _index);
+            _ctSheet.insertRule(ruleName + '{' + ruleTxt + '}', _index);
         } else if (_ctSheet.addRule) {
-            _ctSheet.addRule('@' + hyphenize(browserPrefix('Keyframes')) + ' ' + _name, _text, _index);
+            _ctSheet.addRule(ruleName, ruleTxt, _index);
         }
-        return _name;
-    }
-
-    function concatParam(params){
-        var _text = '';
-        for(var i in params){
-            if(i !== 'key') _text += hyphenize(i) + ':' + params[i] + ';';
-        }
-        return _text;
     }
 
     function removeRule(name) {
@@ -165,15 +148,46 @@
         }
     }
 
+    function concatParam(params){
+        var _text = '';
+        for(var i in params){
+            if(i !== 'key') _text += hyphenize(i) + ':' + params[i] + ';';
+        }
+        return _text;
+    }
+
+    function addKfsRule(name, keys) {
+        var _name = 'ct_kfs_' + name;
+        var _text = '';
+        var _len = keys.length;
+        for(var i in keys){
+            var _key;
+            if(keys[i].key !== undefined) _key = keys[i].key;
+            else _key = Math.floor(i/(_len-1)*100);
+            _text += _key + '%{' + concatParam(keys[i]) + '}';
+        }
+
+        addRule('@' + hyphenize(browserPrefix('Keyframes'))+ ' ' + _name, _text);
+
+        return _name;
+    }
+
+
     function addAnimRule(name, txt) {
-        var _index = _ctRules.length;
         var _name = 'ct_anim_' + name;
         var _text = hyphenize(browserPrefix('Animation'))+ ':' + txt + ";";
-        if (_ctSheet.insertRule) {
-            _ctSheet.insertRule('.' + _name + '{' + _text + "}", _index);
-        } else if (_ctSheet.addRule) {
-            _ctSheet.addRule('.' + _name, _text, _index);
-        }
+
+        addRule('.' + _name, _text);
+
+        return _name;
+    }
+
+    function addPauseRule(name) {
+        var _name = 'ct_pause_'+name;
+        var _text = hyphenize(browserPrefix('AnimationPlayState'))+ ':' + 'paused' + ";";
+
+        addRule('.' + _name, _text);
+
         return _name;
     }
 
@@ -316,12 +330,28 @@
 
     }
 
-    function killTween(params){
-        setStyle(params.dom, params.css);
+    function killTween(params, end){
+        pauseTween(params);
+        resumeTween(params);
+
+        removeEventHandler(params.dom);
+
+        if(end){
+            setStyle(params.dom, params.css);
+            if(params.callback)
+                params.callback.apply(params.dom, params.params);
+        }else{
+            var _dom = params.dom;
+            var _params = params.css;
+            for(var i in _params){
+                _dom.style[i] = getStyle(_dom, i);
+            }
+        }
         removeClass(params.dom, params.anim);
         removeRule(params.kfs);
         removeRule('.'+params.anim);
-        removeEventHandler(params.dom);
+        if(params.state) removeRule('.'+params.state);
+
     }
 
     function checkCssName(dom, cssName){
@@ -361,10 +391,7 @@
     }
 
     function endHandler(params){
-        killTween(params);
-
-        if(params.callback)
-            params.callback.apply(params.dom, params.params);
+        killTween(params, true);
     }
 
     function addEventHandler(dom, eventName, handler, params){
@@ -418,9 +445,10 @@
                 break;
         }
 
-        if(_dom.style[_param]){
-            return _dom.style[_param];
-        }else if(_dom.currentStyle){
+        //if(_dom.style[_param]){
+        //    return _dom.style[_param];
+        //}else
+        if(_dom.currentStyle){
             return _dom.currentStyle[_param];
         }else if(document.defaultView && document.defaultView.getComputedStyle){
             var _p = hyphenize(_param);
@@ -439,11 +467,20 @@
     }
 
     function pauseTween(params){
-        params.dom.style[browserPrefix('AnimationPlayState')] = 'paused';
+        var _name;
+        if(params.state){
+            _name = params.state;
+        }else{
+            var _id = ++_ctId;
+            _name = addPauseRule(_id);
+            params.state = _name;
+        }
+        addClass(params.dom, _name);
     }
 
     function resumeTween(params){
-        params.dom.style[browserPrefix('AnimationPlayState')] = 'running';
+        var _name = params.state;
+        removeClass(params.dom, _name);
     }
 
 
@@ -533,17 +570,19 @@
             });
         },
 
-        kill: function(target){
+        kill: function(target, end){
             var _dom = getElement(target);
             each(_dom, function(index, obj){
-                if(obj._ct_eid) killTween(events[obj._ct_eid][endEvent].params);
+                if(obj._ct_eid){
+                    killTween(events[obj._ct_eid][endEvent].params, end);
+                }
             });
         },
 
-        killAll: function(){
+        killAll: function(end){
             for(var i in events){
                 var _p = events[i][endEvent];
-                killTween(_p);
+                killTween(_p, end);
             }
         },
 
