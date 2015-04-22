@@ -327,6 +327,7 @@
         addEventHandler(_dom, iterationEvent, iterationHandler, {dom:_dom, callback:_iterationCallback, params:_iterationCallbackParams});
         addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, anim:_animName, pause:_pauseName, css:_iteration%2===0?_keys[0]:_toParams});
 
+        if(getStyle(_dom,'display') == 'none') setStyle(_dom,{'display':'block'});
         addClass(_dom, _animName);
 
     }
