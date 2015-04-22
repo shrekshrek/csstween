@@ -321,10 +321,11 @@
         var _id = ++_ctId;
         var _kfsName = addKfsRule(_id, _keys);
         var _animName = addAnimRule(_id, _kfsName + ' ' + _duration + ' ' + _ease + ' ' + _delay + ' ' + _iteration + ' ' + _direction);
+        var _pauseName = addPauseRule(_id);
 
         addEventHandler(_dom, startEvent, startHandler, {dom:_dom, callback:_startCallback, params:_startCallbackParams});
         addEventHandler(_dom, iterationEvent, iterationHandler, {dom:_dom, callback:_iterationCallback, params:_iterationCallbackParams});
-        addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, anim:_animName, css:_iteration%2===0?_keys[0]:_toParams});
+        addEventHandler(_dom, endEvent, endHandler, {dom:_dom, callback:_endCallback, params:_endCallbackParams, kfs:_kfsName, anim:_animName, pause:_pauseName, css:_iteration%2===0?_keys[0]:_toParams});
 
         addClass(_dom, _animName);
 
@@ -350,7 +351,7 @@
         removeClass(params.dom, params.anim);
         removeRule(params.kfs);
         removeRule('.'+params.anim);
-        if(params.state) removeRule('.'+params.state);
+        removeRule('.'+params.pause);
 
     }
 
@@ -467,20 +468,11 @@
     }
 
     function pauseTween(params){
-        var _name;
-        if(params.state){
-            _name = params.state;
-        }else{
-            var _id = ++_ctId;
-            _name = addPauseRule(_id);
-            params.state = _name;
-        }
-        addClass(params.dom, _name);
+        addClass(params.dom, params.pause);
     }
 
     function resumeTween(params){
-        var _name = params.state;
-        removeClass(params.dom, _name);
+        removeClass(params.dom, params.pause);
     }
 
 
@@ -581,7 +573,7 @@
 
         killAll: function(end){
             for(var i in events){
-                var _p = events[i][endEvent];
+                var _p = events[i][endEvent].params;
                 killTween(_p, end);
             }
         },
@@ -595,7 +587,7 @@
 
         pauseAll: function(){
             for(var i in events){
-                var _p = events[i][endEvent];
+                var _p = events[i][endEvent].params;
                 pauseTween(_p);
             }
         },
@@ -609,7 +601,7 @@
 
         resumeAll: function(){
             for(var i in events){
-                var _p = events[i][endEvent];
+                var _p = events[i][endEvent].params;
                 resumeTween(_p);
             }
         }
