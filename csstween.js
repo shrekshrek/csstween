@@ -404,6 +404,8 @@
                 case '-=':
                     cssValue = parseFloat(getStyle(dom, cssName)) - _n;
                     break;
+                default:
+                    break;
             }
         }
         return cssValue;
@@ -511,7 +513,7 @@
                 var _params = {};
                 for(var j in params){
                     var _name = checkCssName(obj, j);
-                    if(_name) _params[_name] = checkCssValue(_name, params[j]);
+                    if(_name) _params[_name] = checkCssValue(obj, _name, params[j]);
                 }
                 setStyle(obj, _params);
             });
