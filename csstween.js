@@ -53,6 +53,12 @@
         });
     }
 
+    function firstUper(str){
+        return str.replace(/\b(\w)|\s(\w)/g, function(m){
+            return m.toUpperCase();
+        });
+    }
+
     function objct2array(obj){
         var _a = [];
         for(var i in obj){
@@ -94,7 +100,7 @@
 
     function browserPrefix(str){
         if (arguments.length) {
-            return _browserPrefix + str;
+            return _browserPrefix + firstUper(str);
         } else {
             return _browserPrefix;
         }
@@ -252,12 +258,15 @@
                         break;
                     default:
                         var _name = checkCssName(_dom, j);
-                        if(_name) _obj[_name] = checkCssValue(_name, _obj2[j]);
+                        if(_name) _obj[_name] = checkCssValue(_dom, _name, _obj2[j]);
                         break;
                 }
             }
             _keys.push(_obj);
         }
+
+        var fromParams = _keys[0];
+        setStyle(_dom, fromParams);
 
         var toParams = arguments[_len - 1];
         var _toParams = {};
@@ -312,7 +321,7 @@
                     break;
                 default:
                     var _name = checkCssName(_dom, i);
-                    if(_name) _toParams[_name] = checkCssValue(_name, toParams[i]);
+                    if(_name) _toParams[_name] = checkCssValue(_dom, _name, toParams[i]);
                     break;
             }
         }
@@ -356,30 +365,48 @@
 
     }
 
+    var needFixCssNames = ['transform','transformOrigin'];
     function checkCssName(dom, cssName){
-        switch(cssName){
-            case 'transform':
-            case 'Transform':
-                var _name = browserPrefix('Transform');
-                return _name;
-                break;
-            default:
-                var _name = camelize(cssName);
-                if(dom.style[_name] !== undefined)
-                    return _name;
-                break;
+        var _name = camelize(cssName);
+        for(var i in needFixCssNames){
+            if(_name === needFixCssNames[i]){
+                _name = browserPrefix(_name);
+            }
         }
-        return null;
+
+        if(dom.style[_name] !== undefined){
+            return _name;
+        }else{
+            return null;
+        }
+
     }
 
     var specialCssNames = ['fontWeight','lineHeight','opacity','zoom'];
-    function checkCssValue(cssName, cssValue){
+    function checkCssValue(dom, cssName, cssValue){
+        var _n = calcValue(dom, cssName, cssValue);
         for(var i in specialCssNames){
             if(cssName === specialCssNames[i]){
-                return cssValue;
+                return _n;
             }
         }
-        return typeof(cssValue) === 'number'?cssValue + 'px':cssValue;
+        return typeof(_n) === 'number'?_n + 'px':_n;
+    }
+
+    function calcValue(dom, cssName, cssValue){
+        if(typeof(cssValue) === 'string'){
+            var _s = cssValue.substr(0, 2);
+            var _n = parseFloat(cssValue.substr(2, cssValue.length-1));
+            switch(_s){
+                case '+=':
+                    cssValue = parseFloat(getStyle(dom, cssName)) + _n;
+                    break;
+                case '-=':
+                    cssValue = parseFloat(getStyle(dom, cssName)) - _n;
+                    break;
+            }
+        }
+        return cssValue;
     }
 
     function startHandler(params){
@@ -437,15 +464,7 @@
 
     function getStyle(dom, param){
         var _dom = dom;
-        var _param = '';
-        switch(param){
-            case 'transform':
-                _param = browserPrefix('Transform');
-                break;
-            default:
-                _param = camelize(param);
-                break;
-        }
+        var _param = checkCssName(dom, param);
 
         //if(_dom.style[_param]){
         //    return _dom.style[_param];
