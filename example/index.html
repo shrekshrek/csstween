@@ -51,76 +51,67 @@
 
 
 
-//    CT.set('.b1 #box2',{marginLeft:300, opacity:0});
-//
-//    CT.fromTo('.box', 1, {marginLeft:300, opacity:0}, {marginLeft:200, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
-//        console.log("first complete");
-//    }});
-//
-//    setTimeout(function(){
-////        CT.kill('.b1 #box2');
-//        CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
-//            console.log("complete2");
-//            CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.easeOut, onEnd:function(){
-//                console.log("complete3");
-//                CT.fromTo('.b1 #box2', 2, {marginLeft:500, opacity:0.5}, {marginLeft:400, opacity:1, ease:CT.Quad.easeOut, onEnd:function(n){
-//                    console.log("complete",this,n);
-//                }, onEndParams:[50]});
-//            }});
-//        }});
-//    }, 500);
-////
-//    CT.fromTo('.b1 #box1', 1, {
-//        marginLeft:300,
-//        transform:'rotate(80deg)',
-//        opacity:0
-//    }, {
-//        key:20,
-//        marginLeft:400,
-//        transform:'rotate(320deg)',
-//        opacity:1
-//    },{
-//        marginLeft:200,
-//        transform:'rotate(300deg)',
-//        opacity:0.5,
-//        repeat:5,
-//        yoyo:true,
-//        delay:1,
-//        ease:CT.Quart.easeOut,
-//        onStart:function(){
-//            console.log("start");
-//        },
-//        onIteration:function(){
-//            console.log("iteration");
-//        },
-//        onEnd:function(){
-//            console.log("complete");
-//        }
-//    });
-//////
-//    setTimeout(function(){
-//        CT.pauseAll();
-//        console.log(CT.get('.b1 #box1','transform'));
-//    }, 2000);
-////
-//    setTimeout(function(){
-//        CT.resume('.b1 #box1');
-//    }, 3000);
-//
-//    setTimeout(function(){console.log('tttt');
-//        CT.resume('.b1 #box2');
-//    }, 4000);
+    CT.set('.b1 #box2',{marginLeft:300, opacity:0});
 
+    CT.fromTo('.box', 1, {marginLeft:300, opacity:0}, {marginLeft:200, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
+        console.log("first complete");
+    }});
 
-    CT.to('.b1 #box1', 1, {
-        marginLeft:300,
-        transform:'rotate(280deg)',
-        transformOrigin:'100% 0%'
-    });
     setTimeout(function(){
-//        CT.pauseAll();
+//        CT.kill('.b1 #box2');
+        CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.easeInOut, onEnd:function(){
+            console.log("complete2");
+            CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.easeOut, onEnd:function(){
+                console.log("complete3");
+                CT.fromTo('.b1 #box2', 2, {marginLeft:500, opacity:0.5}, {marginLeft:400, opacity:1, ease:CT.Quad.easeOut, onEnd:function(n){
+                    console.log("complete",this,n);
+                }, onEndParams:[50]});
+            }});
+        }});
+    }, 500);
+//
+    CT.fromTo('.b1 #box1', 1, {
+        marginLeft:300,
+        transform:'rotate(80deg)',
+        opacity:0
+    }, {
+        key:20,
+        marginLeft:400,
+        transform:'rotate(320deg)',
+        opacity:1
+    },{
+        marginLeft:200,
+        transform:'rotate(300deg)',
+        opacity:0.5,
+        repeat:5,
+        yoyo:true,
+        delay:1,
+        ease:CT.Quart.easeOut,
+        onStart:function(){
+            console.log("start");
+        },
+        onIteration:function(){
+            console.log("iteration");
+        },
+        onEnd:function(){
+            console.log("complete");
+        }
+    });
+////
+    setTimeout(function(){
+        CT.pauseAll();
         console.log(CT.get('.b1 #box1','transform'));
     }, 2000);
+//
+    setTimeout(function(){
+        CT.resume('.b1 #box1');
+    }, 3000);
+
+    setTimeout(function(){console.log('tttt');
+        CT.resume('.b1 #box2');
+    }, 4000);
+
+
 
 </script>
 </body>
