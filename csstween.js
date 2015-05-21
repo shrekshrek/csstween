@@ -225,8 +225,7 @@
 
     function addTweenId(dom, id){
         if(dom._ct_tId){
-            killTween(tweens[dom._ct_tId]);
-            delete tweens[dom._ct_tId];
+            killTween(dom._ct_tId);
         }
         dom._ct_tId = id;
     }
@@ -352,7 +351,6 @@
         var _pauseName = addPauseRule(_id);
 
         _obj.dom = _dom;
-        _obj.id = _tweenId;
         _obj.keyframes = _kfsName;
         _obj.anim = _animName;
         _obj.pause = _pauseName;
@@ -366,8 +364,8 @@
         tweens[_tweenId] = _obj;
     }
 
-    function killTween(tween, end){
-        var _obj = tween;
+    function killTween(id, end){
+        var _obj = tweens[id];
         if(end === undefined)
             end = false;
 
@@ -392,7 +390,9 @@
         removeRule('.'+_obj.anim);
         removeRule('.'+_obj.pause);
 
-        removeTweenId(_obj.dom, _obj.id);
+        removeTweenId(_obj.dom, id);
+
+        delete tweens[id];
     }
 
     var needFixCssNames = ['transform','transformOrigin','transformStyle','perspective','perspectiveOrigin','backfaceVisibility','transition'];
@@ -452,8 +452,7 @@
     }
 
     function endHandler(params){
-        killTween(tweens[params.id]);
-        delete tweens[params.id];
+        killTween(params.id);
         if(params.callback)
             params.callback.apply(this, params.params);
     }
@@ -614,16 +613,14 @@
             var _dom = getElement(target);
             each(_dom, function(index, obj){
                 if(obj._ct_tId){
-                    killTween(tweens[obj._ct_tId], end);
-                    delete tweens[obj._ct_tId];
+                    killTween(obj._ct_tId, end);
                 }
             });
         },
 
         killAll: function(end){
             for(var i in tweens){
-                killTween(tweens[i], end);
-                delete tweens[i];
+                killTween(i, end);
             }
         },
 
