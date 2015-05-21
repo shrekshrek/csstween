@@ -103,7 +103,7 @@
     }
 
     function browserPrefix(str){
-        if (arguments.length) {
+        if (str) {
             return prefix + firstUper(str);
         } else {
             return prefix;
