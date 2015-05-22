@@ -488,12 +488,12 @@
         //if(_dom.style[_name]){
         //    return _dom.style[_name];
         //}else
-        if(_dom.currentStyle){
-            return _dom.currentStyle[_name];
-        }else if(document.defaultView && document.defaultView.getComputedStyle){
+        if(document.defaultView && document.defaultView.getComputedStyle){
             var _p = hyphenize(_name);
             var _s = document.defaultView.getComputedStyle(_dom,'');
             return _s && _s.getPropertyValue(_p);
+        }else if(_dom.currentStyle){
+            return _dom.currentStyle[_name];
         }else{
             return null;
         }
