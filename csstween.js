@@ -199,7 +199,6 @@
     // --------------------------------------------------------------------class 相关函数
     function hasClass( dom, className ){
         return !!dom.className.match(new RegExp("(\\s|^)" + className));
-        //return !!dom.className.match( new RegExp( "(\\s|^)" + className + "(\\s|$)") );
     }
 
     function addClass( dom, className ){
@@ -209,9 +208,7 @@
     }
 
     function removeClass( dom, className ){
-        //if( hasClass( dom, className ) ){
-            dom.className = dom.className.replace(new RegExp("(\\s|^)" + className),"");
-        //}
+        dom.className = dom.className.replace(new RegExp("(\\s|^)" + className),"");
     }
 
 
@@ -426,7 +423,7 @@
     function calcValue(dom, cssName, cssValue){
         if(typeof(cssValue) === 'string'){
             var _s = cssValue.substr(0, 2);
-            var _n = parseFloat(cssValue.substr(2, cssValue.length-1));
+            var _n = parseFloat(cssValue.substr(2));
             switch(_s){
                 case '+=':
                     cssValue = parseFloat(getStyle(dom, cssName)) + _n;
@@ -488,8 +485,8 @@
         var _name = checkCssName(dom, param);
         if(_name === null) throw "css name is wrong!!!";
 
-        //if(_dom.style[_param]){
-        //    return _dom.style[_param];
+        //if(_dom.style[_name]){
+        //    return _dom.style[_name];
         //}else
         if(_dom.currentStyle){
             return _dom.currentStyle[_name];
@@ -527,9 +524,7 @@
                 throw 'The number of parameters is too much!';
             }
             var _dom = getElement(target);
-            each(_dom, function(index, obj){
-                return getStyle(obj, param);
-            });
+            return getStyle(_dom[0], param);
         },
 
         set: function(target, params){
