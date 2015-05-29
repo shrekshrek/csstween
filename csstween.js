@@ -449,9 +449,7 @@
     }
 
     function endHandler(params){
-        killTween(params.id);
-        if(params.callback)
-            params.callback.apply(this, params.params);
+        killTween(params.id, true);
     }
 
     function addEventHandler(dom, eventName, handler, params){
