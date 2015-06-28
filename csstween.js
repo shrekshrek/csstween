@@ -6,17 +6,21 @@
  * @author: Shrek.wang, shrekshrek@gmail.com
  **/
 
-(function(root, factory) {
+(function(factory) {
+    var root = (typeof self == 'object' && self.self == self && self) ||
+        (typeof global == 'object' && global.global == global && global);
+
     if (typeof define === 'function' && define.amd) {
         define(['exports'], function(exports) {
-            root.CT = root.CssTween = factory(root, exports);
+            root.CT = factory(root, exports);
         });
+    } else if (typeof exports !== 'undefined') {
+        factory(root, exports);
     } else {
-        root.CT = root.CssTween = factory(root, {});
+        root.CT = factory(root, {});
     }
 
-}(this, function(root, CT) {
-
+}(function(root, CT) {
     var previousCssTween = root.CT;
 
     CT.VERSION = '0.4.0';
