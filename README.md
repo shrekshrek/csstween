@@ -27,9 +27,9 @@ CT.pause(target);
 
 CT.pauseAll();
 
-CT.resume(target);
+CT.play(target);
 
-CT.resumeAll();
+CT.playAll();
 
 param为字符串，  
 Params为数组，

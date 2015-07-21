@@ -371,7 +371,7 @@
             end = false;
 
         pauseTween(_obj);
-        resumeTween(_obj);
+        playTween(_obj);
 
         removeEventHandler(_obj.dom, START_EVENT, _obj[START_EVENT].handler);
         removeEventHandler(_obj.dom, ITERATION_EVENT, _obj[ITERATION_EVENT].handler);
@@ -513,7 +513,7 @@
         addClass(_obj.dom, _obj.pause);
     }
 
-    function resumeTween(tweenObj){
+    function playTween(tweenObj){
         var _obj = tweenObj;
         removeClass(_obj.dom, _obj.pause);
     }
@@ -636,18 +636,18 @@
             }
         },
 
-        resume: function(target){
+        play: function(target){
             var _dom = getElement(target);
             each(_dom, function(index, obj){
                 if(obj._ct_tId){
-                    resumeTween(tweens[obj._ct_tId]);
+                    playTween(tweens[obj._ct_tId]);
                 }
             });
         },
 
-        resumeAll: function(){
+        playAll: function(){
             for(var i in tweens){
-                resumeTween(tweens[i]);
+                playTween(tweens[i]);
             }
         }
 
@@ -656,29 +656,27 @@
     // --------------------------------------------------------------------缓动选项
     extend(CT, {
         Linear: {
-            easeIn:'(0, 0, 1, 1)',
-            easeOut:'(0, 0, 1, 1)',
-            easeInOut:'(0, 0, 1, 1)'
+            None:'(0, 0, 1, 1)'
         },
         Sine: {
-            easeIn:'(0.35, 0, 1, 1)',
-            easeOut:'(0, 0, 0.65, 1)',
-            easeInOut:'(0.35, 0, 0.65, 1)'
+            In:'(0.35, 0, 1, 1)',
+            Out:'(0, 0, 0.65, 1)',
+            InOut:'(0.35, 0, 0.65, 1)'
         },
         Quad: {
-            easeIn:'(0.45, 0, 1, 1)',
-            easeOut:'(0, 0, 0.55, 1)',
-            easeInOut:'(0.45, 0, 0.55, 1)'
+            In:'(0.45, 0, 1, 1)',
+            Out:'(0, 0, 0.55, 1)',
+            InOut:'(0.45, 0, 0.55, 1)'
         },
         Quart: {
-            easeIn:'(0.75, 0, 1, 1)',
-            easeOut:'(0, 0, 0.25, 1)',
-            easeInOut:'(0.75, 0, 0.25, 1)'
+            In:'(0.75, 0, 1, 1)',
+            Out:'(0, 0, 0.25, 1)',
+            InOut:'(0.75, 0, 0.25, 1)'
         },
         Expo: {
-            easeIn:'(1, 0, 1, 1)',
-            easeOut:'(0, 0, 0, 1)',
-            easeInOut:'(1, 0, 0, 1)'
+            In:'(1, 0, 1, 1)',
+            Out:'(0, 0, 0, 1)',
+            InOut:'(1, 0, 0, 1)'
         }
     });
 
