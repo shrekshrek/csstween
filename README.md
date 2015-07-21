@@ -60,6 +60,7 @@ CT.Quart
 
 CT.Expo
 
+除了CT.Linear只有None一项，其他均有In,InOut,Out三项选择。
 
 
 以上方法和参数均是参考TweenMax的方式，有使用经验者会很容易上手。
