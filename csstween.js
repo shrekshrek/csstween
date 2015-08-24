@@ -223,16 +223,10 @@
     function getElement(target){
         if(!target) throw "target is undefined, can't tween!!!";
 
-        switch(typeof(target)){
-            case 'string':
-                return (typeof(document) === 'undefined') ? target : (document.querySelectorAll ? document.querySelectorAll(target) : document.getElementById((target.charAt(0) === '#') ? target.substr(1) : target));
-                break;
-            case 'object':
-                return target;
-                break;
-            default :
-                throw "target is undefined, can't tween!!!";
-                break;
+        if(typeof(target) == 'string'){
+            return (typeof(document) === 'undefined') ? target : (document.querySelectorAll ? document.querySelectorAll(target) : document.getElementById((target.charAt(0) === '#') ? target.substr(1) : target));
+        }else{
+            return target;
         }
     }
 
@@ -459,7 +453,7 @@
                 for(var j in params){
                     var _name = checkCssName(obj, j);
                     if(_name){
-                        _params[_name] = checkCssValue(_name, calcValue(getStyle(obj, _name), params[j]))
+                        _params[_name] = checkCssValue(_name, calcValue(getStyle(obj, _name), params[j]));
                     }
                 }
                 setStyle(obj, _params);
