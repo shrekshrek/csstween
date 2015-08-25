@@ -48,7 +48,7 @@
     }});
 
     setTimeout(function(){
-//        CT.kill('.box');
+        CT.kill('.box');
         CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.InOut, onEnd:function(){
             console.log("complete2");
             CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.Out, onEnd:function(){

@@ -370,6 +370,7 @@
         },
         kill: function(end){
             this.pause();
+            this.play();
 
             var _lastVar = this.vars[this.vars.length - 1];
             if(end){
