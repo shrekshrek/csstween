@@ -321,8 +321,8 @@
             this.delay = _lastVar.delay || 0;
             this.onStart = _lastVar.onStart || null;
             this.onStartParams = _lastVar.onStartParams || [];
-            this.onIteration = _lastVar.onIteration || null;
-            this.onIterationParams = _lastVar.onIterationParams || [];
+            this.onRepeat = _lastVar.onRepeat || null;
+            this.onRepeatParams = _lastVar.onRepeatParams || [];
             this.onEnd = _lastVar.onEnd || null;
             this.onEndParams = _lastVar.onEndParams || [];
             this.isPlaying = _lastVar.isPlaying || true;
@@ -353,7 +353,7 @@
             this.pauseName = addPauseRule(_rid);
 
             this.startHandler = addEventHandler(this.target, START_EVENT, startHandler.bind(this));
-            this.iterationHandler = addEventHandler(this.target, ITERATION_EVENT, iterationHandler.bind(this));
+            this.repeatHandler = addEventHandler(this.target, ITERATION_EVENT, repeatHandler.bind(this));
             this.endHandler = addEventHandler(this.target, END_EVENT, endHandler.bind(this));
 
             addClass(this.target, this.animName);
@@ -382,7 +382,7 @@
             }
 
             removeEventHandler(this.target, START_EVENT, this.startHandler);
-            removeEventHandler(this.target, ITERATION_EVENT, this.iterationHandler);
+            removeEventHandler(this.target, ITERATION_EVENT, this.repeatHandler);
             removeEventHandler(this.target, END_EVENT, this.endHandler);
 
             removeClass(this.target, this.animName);
@@ -408,9 +408,9 @@
             this.onStart.apply(this.target, this.onStartParams);
     }
 
-    function iterationHandler(){
-        if(this.onIteration)
-            this.onIteration.apply(this.target, this.onIterationParams);
+    function repeatHandler(){
+        if(this.onRepeat)
+            this.onRepeat.apply(this.target, this.onRepeatParams);
     }
 
     function endHandler(){
