@@ -88,7 +88,7 @@
     var ITERATION_EVENT = 'animationiteration';
     var END_EVENT = 'animationend';
 
-    function initPrefix() {
+    (function () {
         var _d = document.createElement('div');
         var _prefixes = ['Webkit', 'Moz', 'Ms', 'O'];
 
@@ -103,7 +103,7 @@
                 break;
             }
         }
-    }
+    }());
 
     function browserPrefix(str) {
         if (str) {
@@ -121,15 +121,14 @@
     var ctRules;
     var ruleId = 0;
 
-    function initCtStyle() {
+    (function () {
         var _style = document.createElement('style');
         _style.rel = 'stylesheet';
         _style.type = 'text/css';
         document.getElementsByTagName('head')[0].appendChild(_style);
         ctSheet = _style.sheet;
         ctRules = ctSheet.cssRules || ctSheet.rules || [];
-
-    }
+    }());
 
     function createRuleId() {
         return ++ruleId;
@@ -261,15 +260,17 @@
         return value2;
     }
 
-    var numberCssNames = ['fontWeight', 'lineHeight', 'opacity', 'zoom'];
-
     function checkCssValue(name, value) {
-        for (var i in numberCssNames) {
-            if (name === numberCssNames[i]) {
+        switch (name) {
+            case 'opacity':
+            case 'fontWeight':
+            case 'lineHeight':
+            case 'zoom':
                 return value;
-            }
+            default:
+                return Math.round(value) + 'px';
+                break;
         }
-        return typeof(value) === 'number' ? value + 'px' : value;
     }
 
     function getStyle(target, name) {
@@ -625,9 +626,6 @@
             InOut: '(1, 0, 0, 1)'
         }
     });
-
-    initPrefix();
-    initCtStyle();
 
     return CT;
 }));
