@@ -398,7 +398,7 @@
 
             if (end) {
                 if (this.onEnd)
-                    this.onEnd.apply(this.target, this.onEndParams);
+                    this.onEnd.apply(this, this.onEndParams);
             }
 
         }
@@ -407,12 +407,12 @@
 
     function startHandler() {
         if (this.onStart)
-            this.onStart.apply(this.target, this.onStartParams);
+            this.onStart.apply(this, this.onStartParams);
     }
 
     function repeatHandler() {
         if (this.onRepeat)
-            this.onRepeat.apply(this.target, this.onRepeatParams);
+            this.onRepeat.apply(this, this.onRepeatParams);
     }
 
     function endHandler() {
@@ -605,25 +605,20 @@
         Linear: {
             None: '(0, 0, 1, 1)'
         },
-        Sine: {
-            In: '(0.35, 0, 1, 1)',
-            Out: '(0, 0, 0.65, 1)',
-            InOut: '(0.35, 0, 0.65, 1)'
-        },
         Quad: {
-            In: '(0.45, 0, 1, 1)',
-            Out: '(0, 0, 0.55, 1)',
-            InOut: '(0.45, 0, 0.55, 1)'
+            In: '(0.3, 0, 0.65, 0.75)',
+            Out: '(0.35, 0.25, 0.7, 1)',
+            InOut: '(0.46, 0.03, 0.54, 0.97)'
         },
         Quart: {
-            In: '(0.75, 0, 1, 1)',
-            Out: '(0, 0, 0.25, 1)',
+            In: '(0.5, 0, 0.75, 0)',
+            Out: '(0.25, 1, 0.5, 1)',
             InOut: '(0.75, 0, 0.25, 1)'
         },
-        Expo: {
-            In: '(1, 0, 1, 1)',
-            Out: '(0, 0, 0, 1)',
-            InOut: '(1, 0, 0, 1)'
+        Back: {
+            In: '(0, 0.35, 0.7, -0.6)',
+            Out: '(0.3, 1.6, 0.65, 1)',
+            InOut: '(0.5, -0.5, 0.5, 1.5)'
         }
     });
 
