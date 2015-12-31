@@ -41,66 +41,60 @@
 
 <script>
 
-    CT.set('.b1 #box2',{marginLeft:300, opacity:0});
+//    CT.set('.b1 #box2',{marginLeft:300, opacity:0});
 
-    CT.fromTo('.box', 1, {marginLeft:'+=250', opacity:0}, {marginLeft:200, opacity:1, ease:CT.Quad.InOut, onEnd:function(){
-        console.log("first complete");
-    }});
+//    CT.fromTo('.box', 1, {marginLeft:'+=250', opacity:0}, {marginLeft:200, opacity:1, ease:CT.Back.Out, onEnd:function(){
+//        console.log("first complete");
+//    }});
 
-    setTimeout(function(){
-//        CT.kill('.box');
-        CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.InOut, onEnd:function(){
-            console.log("complete2");
-            CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.Out, onEnd:function(){
-                console.log("complete3");
-                CT.fromTo('.b1 #box2', 2, {marginLeft:500, opacity:0.5}, {marginLeft:400, opacity:1, ease:CT.Quad.Out, onEnd:function(n){
-                    console.log("complete", this, n);
-                }, onEndParams:[50]});
-            }});
-        }});
-    }, 500);
+//    setTimeout(function(){console.log('start');
+//        CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.InOut, onEnd:function(){
+//            console.log("complete1");
+//            CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.Out, onEnd:function(){
+//                console.log("complete2");
+//                CT.fromTo('.b1 #box2', 2, {marginLeft:500, opacity:0.5}, {marginLeft:400, opacity:1, ease:CT.Quad.Out, onEnd:function(n){
+//                    console.log("complete3", this, n);
+//                }, onEndParams:[50]});
+//            }});
+//        }});
+//    }, 500);
+//
+//    CT.fromTo('.b1 #box1', 1, {
+//        marginLeft:300,
+//        transform:'rotate(80deg)',
+//        opacity:0
+//    }, {
+//        type:'a',
+//        marginLeft:200,
+//        transform:'rotate(300deg)',
+//        opacity:0.5,
+//        repeat:5,
+//        yoyo:true,
+//        delay:1,
+//        ease:CT.Quart.Out,
+//        onStart:function(){
+//            console.log("start");
+//        },
+//        onIteration:function(){
+//            console.log("iteration");
+//        },
+//        onEnd:function(){
+//            console.log("complete");
+//        }
+//    });
 
+function circle(){
     CT.fromTo('.b1 #box1', 1, {
-        marginLeft:300,
-        transform:'rotate(80deg)',
-        opacity:0
+        transform:'rotate(0deg)'
     }, {
-        key:20,
-        marginLeft:400,
-        transform:'rotate(320deg)',
-        opacity:1
-    },{
-        marginLeft:200,
-        transform:'rotate(300deg)',
-        opacity:0.5,
-        repeat:5,
-        yoyo:true,
-        delay:1,
-        ease:CT.Quart.Out,
-        onStart:function(){
-            console.log("start");
-        },
-        onIteration:function(){
-            console.log("iteration");
-        },
+        transform:'rotate(360deg)',
         onEnd:function(){
             console.log("complete");
+            circle();
         }
     });
-
-    setTimeout(function(){
-        CT.pauseAll();
-        console.log(CT.get('.b1 #box1','transform'));
-    }, 2000);
-
-    setTimeout(function(){
-        CT.play('.b1 #box1');
-    }, 3000);
-
-    setTimeout(function(){console.log('tttt');
-        CT.play('.b1 #box2');
-    }, 4000);
-
+}
+circle();
 
 </script>
 </body>

@@ -1,6 +1,6 @@
 /*!
- * VERSION: 0.5.0
- * DATE: 2015-09-24
+ * VERSION: 0.6.0
+ * DATE: 2015-12-31
  * GIT:https://github.com/shrekshrek/csstween
  *
  * @author: Shrek.wang, shrekshrek@gmail.com
@@ -21,15 +21,6 @@
     }
 
 }(function (root, CT) {
-    var previousCssTween = root.CT;
-
-    CT.VERSION = '0.5.0';
-
-    CT.noConflict = function () {
-        root.CT = previousCssTween;
-        return this;
-    };
-
     // --------------------------------------------------------------------辅助方法
     function extend(obj, obj2) {
         for (var prop in obj2) {
@@ -38,7 +29,9 @@
     }
 
     function each(obj, callback) {
-        if (obj.length === undefined) {
+        if (typeof(obj) === 'function') {
+            callback.call(obj, 0, obj);
+        } else if (obj.length === undefined) {
             callback.call(obj, 0, obj);
         } else {
             for (var i = 0; i < obj.length; i++) {
@@ -52,13 +45,6 @@
         return str.replace(/([A-Z])/g, "-$1").toLowerCase();
     }
 
-    //  -webkit-transform 转 WebkitTransform
-    //function camelize(str){
-    //    return str.replace(/\-(\w)/g, function(all, letter){
-    //        return letter.toUpperCase();
-    //    });
-    //}
-
     //  transformOrigin 转 TransformOrigin
     function firstUpper(str) {
         return str.replace(/\b(\w)|\s(\w)/g, function (m) {
@@ -66,39 +52,28 @@
         });
     }
 
-    //  TransformOrigin 转 transformOrigin
-    //function firstLower(str){
-    //    return str.replace(/\b(\w)|\s(\w)/g, function(m){
-    //        return m.toLowerCase();
-    //    });
-    //}
-
-    function objct2array(obj) {
-        var _a = [];
-        for (var i in obj) {
-            _a[i] = obj[i];
-        }
-        return _a;
-    }
-
     // --------------------------------------------------------------------检测是否支持,浏览器补全方法
     var prefix = '';
 
-    var START_EVENT = 'animationstart';
-    var ITERATION_EVENT = 'animationiteration';
-    var END_EVENT = 'animationend';
+    var A_START_EVENT = 'animationstart';
+    var A_REPEAT_EVENT = 'animationiteration';
+    var A_END_EVENT = 'animationend';
+
+    var T_END_EVENT = 'transitionend';
 
     (function () {
         var _d = document.createElement('div');
         var _prefixes = ['Webkit', 'Moz', 'Ms', 'O'];
 
         for (var i in _prefixes) {
-            if ((_prefixes[i] + 'Animation') in _d.style) {
+            if ((_prefixes[i] + 'Transition') in _d.style) {
                 prefix = _prefixes[i];
                 if (prefix !== 'Moz') {
-                    START_EVENT = prefix.toLowerCase() + 'AnimationStart';
-                    ITERATION_EVENT = prefix.toLowerCase() + 'AnimationIteration';
-                    END_EVENT = prefix.toLowerCase() + 'AnimationEnd';
+                    A_START_EVENT = prefix.toLowerCase() + 'AnimationStart';
+                    A_REPEAT_EVENT = prefix.toLowerCase() + 'AnimationIteration';
+                    A_END_EVENT = prefix.toLowerCase() + 'AnimationEnd';
+
+                    T_END_EVENT = prefix.toLowerCase() + 'TransitionEnd';
                 }
                 break;
             }
@@ -113,110 +88,11 @@
         }
     }
 
-
-    // --------------------------------------------------------------------css rule 相关函数
-    var keyframesRule = window.CSSRule.KEYFRAMES_RULE || window.CSSRule.WEBKIT_KEYFRAMES_RULE || window.CSSRule.MOZ_KEYFRAMES_RULE;
-    var styleRule = window.CSSRule.STYLE_RULE || window.CSSRule.WEBKIT_STYLE_RULE || window.CSSRule.MOZ_STYLE_RULE;
-    var ctSheet;
-    var ctRules;
-    var ruleId = 0;
-
-    (function () {
-        var _style = document.createElement('style');
-        _style.rel = 'stylesheet';
-        _style.type = 'text/css';
-        document.getElementsByTagName('head')[0].appendChild(_style);
-        ctSheet = _style.sheet;
-        ctRules = ctSheet.cssRules || ctSheet.rules || [];
-    }());
-
-    function createRuleId() {
-        return ++ruleId;
-    }
-
-    function getRule(name) {
-        for (var i in ctRules) {
-            var _rule = ctRules[i];
-            if ((_rule.type === keyframesRule && _rule.name === name) || (_rule.type === styleRule && _rule.selectorText === name)) {
-                return {rule: _rule, index: i};
-            }
-        }
-        return null;
-    }
-
-    function addRule(ruleName, ruleTxt) {
-        var _index = ctRules.length;
-        if (ctSheet.insertRule) {
-            ctSheet.insertRule(ruleName + '{' + ruleTxt + '}', _index);
-        } else if (ctSheet.addRule) {
-            ctSheet.addRule(ruleName, ruleTxt, _index);
-        }
-    }
-
-    function removeRule(name) {
-        var _obj = getRule(name);
-        if (_obj === null) return;
-
-        if (ctSheet.deleteRule) {
-            ctSheet.deleteRule(_obj.index);
-        } else if (ctSheet.removeRule) {
-            ctSheet.removeRule(_obj.index);
-        }
-    }
-
-    function concatParam(params) {
-        var _text = '';
-        for (var i in params) {
-            if (i !== 'key') _text += hyphenize(i) + ':' + params[i] + ';';
-        }
-        return _text;
-    }
-
-    function addKfsRule(name, keys) {
-        var _name = 'ct_kfs_' + name;
-        var _text = '';
-        var _len = keys.length;
-        for (var i in keys) {
-            var _key;
-            if (keys[i].key !== undefined) _key = keys[i].key;
-            else _key = Math.floor(i / (_len - 1) * 100);
-            _text += _key + '%{' + concatParam(keys[i]) + '}';
-        }
-        addRule('@' + hyphenize(browserPrefix('Keyframes')) + ' ' + _name, _text);
-        return _name;
-    }
-
-    function addAnimRule(name, txt) {
-        var _name = 'ct_anim_' + name;
-        var _text = hyphenize(browserPrefix('Animation')) + ':' + txt + ";";
-        _text += hyphenize(browserPrefix('AnimationFillMode')) + ':' + 'both' + ";";
-        addRule('.' + _name, _text);
-        return _name;
-    }
-
-    function addPauseRule(name) {
-        var _name = 'ct_pause_' + name;
-        var _text = hyphenize(browserPrefix('AnimationPlayState')) + ':' + 'paused' + ";";
-        addRule('.' + _name, _text);
-        return _name;
-    }
-
-
-    // --------------------------------------------------------------------class 相关函数
-    function hasClass(target, className) {
-        return !!target.className.match(new RegExp("(\\s|^)" + className));
-    }
-
-    function addClass(target, className) {
-        if (!hasClass(target, className)) {
-            target.className += " " + className;
-        }
-    }
-
-    function removeClass(target, className) {
-        target.className = target.className.replace(new RegExp("(\\s|^)" + className), "");
-    }
-
+    var requestFrame = window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame;
 
     // --------------------------------------------------------------------style 相关函数
     function getElement(target) {
@@ -230,14 +106,10 @@
     }
 
     function checkCssName(target, name) {
-        if (target.style[name] !== undefined) {
-            return name;
-        }
+        if (target.style[name] !== undefined) return name;
 
         name = browserPrefix(name);
-        if (target.style[name] !== undefined) {
-            return name;
-        }
+        if (target.style[name] !== undefined) return name;
 
         return null;
     }
@@ -252,8 +124,6 @@
                     break;
                 case '-=':
                     value2 = parseFloat(value) - _n;
-                    break;
-                default:
                     break;
             }
         }
@@ -290,9 +160,75 @@
 
     function setStyle(target, params) {
         for (var i in params) {
-            target.style[i] = params[i];
+            if(target.style[i] != undefined) target.style[i] = checkCssValue(i, params[i]);
         }
     }
+
+
+    // --------------------------------------------------------------------css rule 相关函数
+    var keyframesRule = window.CSSRule.KEYFRAMES_RULE || window.CSSRule.WEBKIT_KEYFRAMES_RULE || window.CSSRule.MOZ_KEYFRAMES_RULE;
+    var styleRule = window.CSSRule.STYLE_RULE || window.CSSRule.WEBKIT_STYLE_RULE || window.CSSRule.MOZ_STYLE_RULE;
+    var ctSheet;
+    var ctRules;
+    var ruleId = 0;
+
+    (function () {
+        var _style = document.createElement('style');
+        _style.rel = 'stylesheet';
+        _style.type = 'text/css';
+        document.getElementsByTagName('head')[0].appendChild(_style);
+        ctSheet = _style.sheet;
+        ctRules = ctSheet.cssRules || ctSheet.rules || [];
+    }());
+
+    function createRuleId() {
+        return ++ruleId;
+    }
+
+    function getRule(name) {
+        for (var i in ctRules) {
+            var _rule = ctRules[i];
+            if ((_rule.type === keyframesRule && _rule.name === name) || (_rule.type === styleRule && _rule.selectorText === name)) {
+                return {rule: _rule, index: i};
+            }
+        }
+        return null;
+    }
+
+    function addRule(name, content) {
+        var _index = ctRules.length;
+        if (ctSheet.insertRule) {
+            ctSheet.insertRule(name + '{' + content + '}', _index);
+        } else if (ctSheet.addRule) {
+            ctSheet.addRule(name, content, _index);
+        }
+    }
+
+    function removeRule(name) {
+        var _obj = getRule(name);
+        if (_obj === null) return;
+
+        if (ctSheet.deleteRule) {
+            ctSheet.deleteRule(_obj.index);
+        } else if (ctSheet.removeRule) {
+            ctSheet.removeRule(_obj.index);
+        }
+    }
+
+    function addKfsRule(name, fromVars, toVars) {
+        var _name = 'ct_kfs_' + name;
+        var _txt1 = '0%{';
+        var _txt2 = '100%{';
+        for (var i in fromVars) {
+            _txt1 += hyphenize(i) + ':' + checkCssValue(i, fromVars[i]) + ';';
+            _txt2 += hyphenize(i) + ':' + checkCssValue(i, toVars[i]) + ';';
+        }
+        _txt1 += '}';
+        _txt2 += '}';
+        addRule('@' + hyphenize(browserPrefix('Keyframes')) + ' ' + _name, _txt1 + _txt2);
+        return _name;
+    }
+
 
     // --------------------------------------------------------------------tween
     var tweens = {};
@@ -307,131 +243,97 @@
     }
 
     extend(tween.prototype, {
-        initialize: function () {
-            var _args = arguments;
+        initialize: function (target, time, fromVars, toVars) {
+            var _self = this;
 
-            var _vars = _args[3];
-            var _len = _vars.length;
-            var _lastVar = _vars[_len - 1];
+            this.fromVars = fromVars;
+            this.toVars = toVars;
+            this.target = target;
+            this.duration = Math.max(time, 0);
+            this.ease = 'cubic-bezier' + (toVars.ease || CT.Linear.None);
+            this.delay = Math.max(toVars.delay || 0, 0);
 
-            this.var0 = _args[2];
-            this.target = _args[0];
-            this.duration = _args[1];
-            this.ease = 'cubic-bezier' + (_lastVar.ease || CT.Linear.None);
-            this.repeat = _lastVar.repeat || 1;
-            this.yoyo = _lastVar.yoyo || false;
-            this.delay = _lastVar.delay || 0;
-            this.onStart = _lastVar.onStart || null;
-            this.onStartParams = _lastVar.onStartParams || [];
-            this.onRepeat = _lastVar.onRepeat || null;
-            this.onRepeatParams = _lastVar.onRepeatParams || [];
-            this.onEnd = _lastVar.onEnd || null;
-            this.onEndParams = _lastVar.onEndParams || [];
-            this.isPlaying = _lastVar.isPlaying || true;
+            this.yoyo = toVars.yoyo || false;
+            this.repeat = Math.floor(toVars.repeat || 1);
+            this.onStart = toVars.onStart || null;
+            this.onStartParams = toVars.onStartParams || [];
+            this.onRepeat = toVars.onRepeat || null;
+            this.onRepeatParams = toVars.onRepeatParams || [];
+            this.onEnd = toVars.onEnd || null;
+            this.onEndParams = toVars.onEndParams || [];
+
+            this.type = toVars.type || '';
 
             var _tid = createTweenId();
-            if (this.target._ct_tId) {
-                tweens[this.target._ct_tId].kill();
+            if (this.target._ct_id) {
+                tweens[this.target._ct_id].kill();
             }
-            this.target._ct_tId = _tid;
+            this.target._ct_id = _tid;
 
-            this.vars = [];
-            var _var, i, j;
-            for (i in _vars) {
-                _var = {};
-                for (j in this.var0) {
-                    if (j === 'key') {
-                        _var[j] = _vars[i][j];
-                    } else {
-                        _var[checkCssName(this.target, j)] = checkCssValue(j, calcValue(this.var0[j], _vars[i][j]));
-                    }
-                }
-                this.vars.push(_var);
+            if(this.type == 'a'){
+                this.startHandler = function(){
+                    if (_self.onStart) _self.onStart.apply(this, _self.onStartParams);
+                };
+                this.target.addEventListener(A_START_EVENT, this.startHandler, false);
+
+                this.repeatHandler = function(){
+                    if (_self.onRepeat) _self.onRepeat.apply(this, _self.onRepeatParams);
+                };
+                this.target.addEventListener(A_REPEAT_EVENT, this.repeatHandler, false);
+
+                this.endHandler = function(){
+                    _self.kill(true);
+                };
+                this.target.addEventListener(A_END_EVENT, this.endHandler, false);
+
+                var _rid = createRuleId();
+                this.kfsName = addKfsRule(_rid, this.fromVars, this.toVars);
+                this.target.style[browserPrefix('Animation')] = this.kfsName + ' ' + this.duration + 's ' + this.ease + ' ' + this.delay + 's ' + (this.repeat < 0 ? 'infinite' : this.repeat) + ' ' + (this.yoyo ? 'alternate' : 'normal');
+                this.target.style[browserPrefix('AnimationFillMode')] = 'both';
+                setStyle(_self.target, _self.toVars);
+            }else{
+                this.endHandler = function(){
+                    _self.kill(true);
+                };
+                this.target.addEventListener(T_END_EVENT, this.endHandler, false);
+
+                requestFrame(function(){
+                    requestFrame(function(){
+                        _self.target.style[browserPrefix('Transition')] = 'all ' + _self.duration + 's ' + _self.ease + ' ' + _self.delay + 's';
+                        setStyle(_self.target, _self.toVars);
+                    });
+                });
             }
-
-            var _rid = createRuleId();
-            this.kfsName = addKfsRule(_rid, this.vars);
-            this.animName = addAnimRule(_rid, this.kfsName + ' ' + this.duration + 's ' + this.ease + ' ' + this.delay + 's ' + (this.repeat < 0 ? 'infinite' : this.repeat) + ' ' + (this.yoyo ? 'alternate' : 'normal'));
-            this.pauseName = addPauseRule(_rid);
-
-            this.startHandler = addEventHandler(this.target, START_EVENT, startHandler.bind(this));
-            this.repeatHandler = addEventHandler(this.target, ITERATION_EVENT, repeatHandler.bind(this));
-            this.endHandler = addEventHandler(this.target, END_EVENT, endHandler.bind(this));
-
-            addClass(this.target, this.animName);
-
-            if (!this.isPlaying) this.pause();
 
             tweens[_tid] = this;
         },
-        play: function () {
-            removeClass(this.target, this.pauseName);
-        },
-        pause: function () {
-            addClass(this.target, this.pauseName);
-        },
         kill: function (end) {
-            this.pause();
-            this.play();
-
-            var _lastVar = this.vars[this.vars.length - 1];
-            if (end) {
-                setStyle(this.target, _lastVar);
-            } else {
-                for (var i in _lastVar) {
-                    this.target.style[i] = getStyle(this.target, i);
+            if (end == false) {
+                for (var i in this.toVars) {
+                    if(this.target.style[i] != undefined) this.target.style[i] = getStyle(this.target, i);
                 }
             }
 
-            removeEventHandler(this.target, START_EVENT, this.startHandler);
-            removeEventHandler(this.target, ITERATION_EVENT, this.repeatHandler);
-            removeEventHandler(this.target, END_EVENT, this.endHandler);
-
-            removeClass(this.target, this.animName);
-
-            removeRule(this.kfsName);
-            removeRule('.' + this.animName);
-            removeRule('.' + this.pauseName);
-
-            delete tweens[this.target._ct_tId];
-            delete this.target._ct_tId;
-
-            if (end) {
-                if (this.onEnd)
-                    this.onEnd.apply(this, this.onEndParams);
+            if(this.type == 'a'){
+                this.target.removeEventListener(A_START_EVENT, this.startHandler, false);
+                this.target.removeEventListener(A_REPEAT_EVENT, this.repeatHandler, false);
+                this.target.removeEventListener(A_END_EVENT, this.endHandler, false);
+                this.target.style[browserPrefix('Animation')] = '';
+                this.target.style[browserPrefix('AnimationFillMode')] = '';
+                removeRule(this.kfsName);
+            }else{
+                this.target.removeEventListener(T_END_EVENT, this.endHandler, false);
+                this.target.style[browserPrefix('Transition')] = '';
             }
 
+            delete tweens[this.target._ct_id];
+            delete this.target._ct_id;
+
+            if (end == true) {
+                if (this.onEnd) this.onEnd.apply(this, this.onEndParams);
+            }
         }
-
     });
-
-    function startHandler() {
-        if (this.onStart)
-            this.onStart.apply(this, this.onStartParams);
-    }
-
-    function repeatHandler() {
-        if (this.onRepeat)
-            this.onRepeat.apply(this, this.onRepeatParams);
-    }
-
-    function endHandler() {
-        this.kill(true);
-    }
-
-    function addEventHandler(target, eventName, handler) {
-        var _handler = function () {
-            handler.call();
-        };
-
-        target.addEventListener(eventName, _handler, false);
-
-        return _handler;
-    }
-
-    function removeEventHandler(target, eventName, handler) {
-        target.removeEventListener(eventName, handler, false);
-    }
 
 
     // --------------------------------------------------------------------主要方法
@@ -463,23 +365,25 @@
             });
         },
 
-        fromTo: function () {
-            if (arguments.length < 4) throw 'The number of parameters is not enough!';
-
-            var _args = objct2array(arguments);
-            var _target = getElement(_args[0]);
+        fromTo: function (target, time, fromVars, toVars) {
+            var _target = getElement(target);
             var _tweens = [];
-            var _fromVars = _args[2];
             each(_target, function (index, obj) {
-                var _var0 = {};
-                for (var i in _fromVars) {
-                    var _name = checkCssName(obj, i);
-                    if (_name) {
-                        _var0[i] = getStyle(obj, _name);
+                var _fromVars = {};
+                var _toVars = {};
+
+                for (var j in toVars) {
+                    if (obj.style[j] !== undefined) {
+                        var _n = parseFloat(getStyle(obj, j));
+                        _fromVars[j] = calcValue(_n, fromVars[j]);
+                        _toVars[j] = calcValue(_n, toVars[j]);
+                    } else {
+                        _toVars[j] = toVars[j];
                     }
                 }
 
-                var _tween = new tween(obj, _args[1], _var0, _args.slice(2));
+                setStyle(obj, _fromVars);
+                var _tween = new tween(obj, time, _fromVars, _toVars);
                 _tweens.push(_tween);
             });
 
@@ -490,32 +394,25 @@
             }
         },
 
-        from: function () {
-            if (arguments.length < 3) throw 'The number of parameters is not enough!';
-
-            var _args = objct2array(arguments);
-            var _len = _args.length;
-            var _target = getElement(_args[0]);
+        from: function (target, time, fromVars) {
+            var _target = getElement(target);
             var _tweens = [];
-            var _fromVars = _args[2];
             each(_target, function (index, obj) {
-                var _var0 = {};
-                var _var1 = {};
-                for (var i in _fromVars) {
-                    var _name = checkCssName(obj, i);
-                    if (_name) {
-                        _var1[i] = _var0[i] = getStyle(obj, _name);
+                var _fromVars = {};
+                var _toVars = {};
+
+                for (var j in fromVars) {
+                    if (obj.style[j] !== undefined) {
+                        var _n = parseFloat(getStyle(obj, j));
+                        _toVars[j] = _n;
+                        _fromVars[j] = calcValue(_n, fromVars[j]);
+                    } else {
+                        _toVars[j] = fromVars[j];
                     }
                 }
 
-                var _toVars = _args[_len - 1];
-                for (var j in _toVars) {
-                    if (_var1[j] == undefined) {
-                        _var1[j] = _toVars[j];
-                    }
-                }
-
-                var _tween = new tween(obj, _args[1], _var0, _args.slice(2).concat(_var1));
+                setStyle(obj, _fromVars);
+                var _tween = new tween(obj, time, _fromVars, _toVars);
                 _tweens.push(_tween);
             });
 
@@ -526,23 +423,24 @@
             }
         },
 
-        to: function () {
-            if (arguments.length < 3) throw 'The number of parameters is not enough!';
-
-            var _args = objct2array(arguments);
-            var _target = getElement(_args[0]);
+        to: function (target, time, toVars) {
+            var _target = getElement(target);
             var _tweens = [];
-            var _fromVars = _args[2];
             each(_target, function (index, obj) {
-                var _var0 = {};
-                for (var i in _fromVars) {
-                    var _name = checkCssName(obj, i);
-                    if (_name) {
-                        _var0[i] = getStyle(obj, _name);
+                var _fromVars = {};
+                var _toVars = {};
+
+                for (var j in toVars) {
+                    if (obj.style[j] !== undefined) {
+                        var _n = parseFloat(getStyle(obj, j));
+                        _fromVars[j] = _n;
+                        _toVars[j] = calcValue(_n, toVars[j]);
+                    } else {
+                        _toVars[j] = toVars[j];
                     }
                 }
 
-                var _tween = new tween(obj, _args[1], _var0, [_var0].concat(_args.slice(2)));
+                var _tween = new tween(obj, time, _fromVars, _toVars);
                 _tweens.push(_tween);
             });
 
@@ -556,8 +454,8 @@
         kill: function (target, end) {
             var _target = getElement(target);
             each(_target, function (index, obj) {
-                if (obj._ct_tId) {
-                    tweens[obj._ct_tId].kill(end);
+                if (obj._ct_id) {
+                    tweens[obj._ct_id].kill(end);
                 }
             });
         },
@@ -565,36 +463,6 @@
         killAll: function (end) {
             for (var i in tweens) {
                 tweens[i].kill(end);
-            }
-        },
-
-        pause: function (target) {
-            var _target = getElement(target);
-            each(_target, function (index, obj) {
-                if (obj._ct_tId) {
-                    tweens[obj._ct_tId].pause();
-                }
-            });
-        },
-
-        pauseAll: function () {
-            for (var i in tweens) {
-                tweens[i].pause();
-            }
-        },
-
-        play: function (target) {
-            var _target = getElement(target);
-            each(_target, function (index, obj) {
-                if (obj._ct_tId) {
-                    tweens[obj._ct_tId].play();
-                }
-            });
-        },
-
-        playAll: function () {
-            for (var i in tweens) {
-                tweens[i].play();
             }
         }
 
@@ -617,8 +485,7 @@
         },
         Back: {
             In: '(0, 0.35, 0.7, -0.6)',
-            Out: '(0.3, 1.6, 0.65, 1)',
-            InOut: '(0.5, -0.5, 0.5, 1.5)'
+            Out: '(0.3, 1.6, 0.65, 1)'
         }
     });
 
