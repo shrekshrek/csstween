@@ -266,7 +266,7 @@
 
             var _tid = createTweenId();
             if (this.target._ct_id) {
-                tweens[this.target._ct_id].kill();
+                tweens[this.target._ct_id].destroy();
             }
             this.target._ct_id = _tid;
 
@@ -282,7 +282,7 @@
                 this.target.addEventListener(A_REPEAT_EVENT, this.repeatHandler, false);
 
                 this.endHandler = function(){
-                    _self.kill(true);
+                    _self.destroy(true);
                 };
                 this.target.addEventListener(A_END_EVENT, this.endHandler, false);
 
@@ -293,7 +293,7 @@
                 setStyle(_self.target, _self.toVars);
             }else{
                 this.endHandler = function(){
-                    _self.kill(true);
+                    _self.destroy(true);
                 };
                 this.target.addEventListener(T_END_EVENT, this.endHandler, false);
 
@@ -307,7 +307,7 @@
 
             tweens[_tid] = this;
         },
-        kill: function (end) {
+        destroy: function (end) {
             if (end == false) {
                 for (var i in this.toVars) {
                     if(this.target.style[i] != undefined) this.target.style[i] = getStyle(this.target, i);
@@ -455,14 +455,14 @@
             var _target = getElement(target);
             each(_target, function (index, obj) {
                 if (obj._ct_id) {
-                    tweens[obj._ct_id].kill(end);
+                    tweens[obj._ct_id].destroy(end);
                 }
             });
         },
 
         killAll: function (end) {
             for (var i in tweens) {
-                tweens[i].kill(end);
+                tweens[i].destroy(end);
             }
         }
 

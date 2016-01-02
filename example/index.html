@@ -47,54 +47,54 @@
 //        console.log("first complete");
 //    }});
 
-//    setTimeout(function(){console.log('start');
-//        CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.InOut, onEnd:function(){
-//            console.log("complete1");
-//            CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.Out, onEnd:function(){
-//                console.log("complete2");
-//                CT.fromTo('.b1 #box2', 2, {marginLeft:500, opacity:0.5}, {marginLeft:400, opacity:1, ease:CT.Quad.Out, onEnd:function(n){
-//                    console.log("complete3", this, n);
-//                }, onEndParams:[50]});
-//            }});
-//        }});
-//    }, 500);
-//
-//    CT.fromTo('.b1 #box1', 1, {
-//        marginLeft:300,
-//        transform:'rotate(80deg)',
-//        opacity:0
-//    }, {
-//        type:'a',
-//        marginLeft:200,
-//        transform:'rotate(300deg)',
-//        opacity:0.5,
-//        repeat:5,
-//        yoyo:true,
-//        delay:1,
-//        ease:CT.Quart.Out,
-//        onStart:function(){
-//            console.log("start");
-//        },
-//        onIteration:function(){
-//            console.log("iteration");
-//        },
-//        onEnd:function(){
-//            console.log("complete");
-//        }
-//    });
+    setTimeout(function(){console.log('start');
+        CT.to('.b1 #box2', 1, {marginTop:300, opacity:1, ease:CT.Quad.InOut, onEnd:function(){
+            console.log("complete1");
+            CT.from('.b1 #box2', 1, {marginTop:100, opacity:0.5, ease:CT.Quad.Out, onEnd:function(){
+                console.log("complete2");
+                CT.fromTo('.b1 #box2', 2, {marginLeft:500, opacity:0.5}, {marginLeft:400, opacity:1, ease:CT.Quad.Out, onEnd:function(n){
+                    console.log("complete3", this, n);
+                }, onEndParams:[50]});
+            }});
+        }});
+    }, 500);
 
-function circle(){
     CT.fromTo('.b1 #box1', 1, {
-        transform:'rotate(0deg)'
+        marginLeft:300,
+        transform:'rotate(80deg)',
+        opacity:0
     }, {
-        transform:'rotate(360deg)',
+        type:'a',
+        marginLeft:200,
+        transform:'rotate(300deg)',
+        opacity:0.5,
+        repeat:5,
+        yoyo:true,
+        delay:1,
+        ease:CT.Quart.Out,
+        onStart:function(){
+            console.log("start");
+        },
+        onIteration:function(){
+            console.log("iteration");
+        },
         onEnd:function(){
             console.log("complete");
-            circle();
         }
     });
-}
-circle();
+
+//function circle(){
+//    CT.fromTo('.b1 #box1', 1, {
+//        transform:'rotate(0deg)'
+//    }, {
+//        transform:'rotate(360deg)',
+//        onEnd:function(){
+//            console.log("complete");
+//            circle();
+//        }
+//    });
+//}
+//circle();
 
 </script>
 </body>
