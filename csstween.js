@@ -138,7 +138,7 @@
             case 'zoom':
                 return value;
             default:
-                return typeof(value) === 'number' ? value + 'px' : value;
+                return typeof(value) === 'number' ? Math.round(value) + 'px' : value;
                 break;
         }
     }
