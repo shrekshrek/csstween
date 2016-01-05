@@ -46,13 +46,11 @@ onRepeatParams设置运动完成返回函数的参数，
 
 CT.Linear
 
-CT.Sine
-
 CT.Quad
 
 CT.Quart
 
-CT.Expo
+CT.Back
 
 除了CT.Linear只有None一项，其他均有In,InOut,Out三项选择。
 
