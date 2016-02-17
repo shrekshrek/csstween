@@ -379,7 +379,7 @@
                         _fromVars[_name] = calcValue(_n, fromVars[j]);
                         _toVars[_name] = calcValue(_n, toVars[j]);
                     } else {
-                        _toVars[_name] = toVars[j];
+                        _toVars[j] = toVars[j];
                     }
                 }
 
@@ -409,7 +409,7 @@
                         _toVars[_name] = _n;
                         _fromVars[_name] = calcValue(_n, fromVars[j]);
                     } else {
-                        _toVars[_name] = fromVars[j];
+                        _toVars[j] = fromVars[j];
                     }
                 }
 
@@ -439,7 +439,7 @@
                         _fromVars[_name] = _n;
                         _toVars[_name] = calcValue(_n, toVars[j]);
                     } else {
-                        _toVars[_name] = toVars[j];
+                        _toVars[j] = toVars[j];
                     }
                 }
 
