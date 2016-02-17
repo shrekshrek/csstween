@@ -144,9 +144,9 @@
     }
 
     function getStyle(target, name) {
-        //if(target.style[name]){
-        //    return target.style[name];
-        //}else
+        if(target.style[name]){
+            return target.style[name];
+        }else
         if (document.defaultView && document.defaultView.getComputedStyle) {
             var _p = hyphenize(name);
             var _s = document.defaultView.getComputedStyle(target, '');
@@ -160,7 +160,7 @@
 
     function setStyle(target, params) {
         for (var i in params) {
-            if(target.style[i] != undefined) target.style[i] = checkCssValue(i, params[i]);
+            target.style[i] = params[i];
         }
     }
 
@@ -220,8 +220,8 @@
         var _txt1 = '0%{';
         var _txt2 = '100%{';
         for (var i in fromVars) {
-            _txt1 += hyphenize(i) + ':' + checkCssValue(i, fromVars[i]) + ';';
-            _txt2 += hyphenize(i) + ':' + checkCssValue(i, toVars[i]) + ';';
+            _txt1 += hyphenize(browserPrefix(i)) + ':' + checkCssValue(i, fromVars[i]) + ';';
+            _txt2 += hyphenize(browserPrefix(i)) + ':' + checkCssValue(i, toVars[i]) + ';';
         }
         _txt1 += '}';
         _txt2 += '}';
@@ -270,18 +270,18 @@
             }
             this.target._ct_id = _tid;
 
-            if(this.type == 'a'){
-                this.startHandler = function(){
+            if (this.type == 'a') {
+                this.startHandler = function () {
                     if (_self.onStart) _self.onStart.apply(this, _self.onStartParams);
                 };
                 this.target.addEventListener(A_START_EVENT, this.startHandler, false);
 
-                this.repeatHandler = function(){
+                this.repeatHandler = function () {
                     if (_self.onRepeat) _self.onRepeat.apply(this, _self.onRepeatParams);
                 };
                 this.target.addEventListener(A_REPEAT_EVENT, this.repeatHandler, false);
 
-                this.endHandler = function(){
+                this.endHandler = function () {
                     _self.destroy(true);
                 };
                 this.target.addEventListener(A_END_EVENT, this.endHandler, false);
@@ -290,15 +290,15 @@
                 this.kfsName = addKfsRule(_rid, this.fromVars, this.toVars);
                 this.target.style[browserPrefix('Animation')] = this.kfsName + ' ' + this.duration + 's ' + this.ease + ' ' + this.delay + 's ' + (this.repeat < 0 ? 'infinite' : this.repeat) + ' ' + (this.yoyo ? 'alternate' : 'normal');
                 this.target.style[browserPrefix('AnimationFillMode')] = 'both';
-                setStyle(_self.target, _self.toVars);
-            }else{
-                this.endHandler = function(){
+                setStyle(this.target, this.toVars);
+            } else {
+                this.endHandler = function () {
                     _self.destroy(true);
                 };
                 this.target.addEventListener(T_END_EVENT, this.endHandler, false);
 
-                requestFrame(function(){
-                    requestFrame(function(){
+                requestFrame(function () {
+                    requestFrame(function () {
                         _self.target.style[browserPrefix('Transition')] = 'all ' + _self.duration + 's ' + _self.ease + ' ' + _self.delay + 's';
                         setStyle(_self.target, _self.toVars);
                     });
@@ -310,18 +310,18 @@
         destroy: function (end) {
             if (end == false) {
                 for (var i in this.toVars) {
-                    if(this.target.style[i] != undefined) this.target.style[i] = getStyle(this.target, i);
+                    if (this.target.style[i] != undefined) this.target.style[i] = getStyle(this.target, i);
                 }
             }
 
-            if(this.type == 'a'){
+            if (this.type == 'a') {
                 this.target.removeEventListener(A_START_EVENT, this.startHandler, false);
                 this.target.removeEventListener(A_REPEAT_EVENT, this.repeatHandler, false);
                 this.target.removeEventListener(A_END_EVENT, this.endHandler, false);
                 this.target.style[browserPrefix('Animation')] = '';
                 this.target.style[browserPrefix('AnimationFillMode')] = '';
                 removeRule(this.kfsName);
-            }else{
+            } else {
                 this.target.removeEventListener(T_END_EVENT, this.endHandler, false);
                 this.target.style[browserPrefix('Transition')] = '';
             }
@@ -373,12 +373,13 @@
                 var _toVars = {};
 
                 for (var j in toVars) {
-                    if (obj.style[j] !== undefined) {
-                        var _n = parseFloat(getStyle(obj, j));
-                        _fromVars[j] = calcValue(_n, fromVars[j]);
-                        _toVars[j] = calcValue(_n, toVars[j]);
+                    var _name = checkCssName(obj, j);
+                    if (_name) {
+                        var _n = getStyle(obj, _name);
+                        _fromVars[_name] = calcValue(_n, fromVars[j]);
+                        _toVars[_name] = calcValue(_n, toVars[j]);
                     } else {
-                        _toVars[j] = toVars[j];
+                        _toVars[_name] = toVars[j];
                     }
                 }
 
@@ -402,12 +403,13 @@
                 var _toVars = {};
 
                 for (var j in fromVars) {
-                    if (obj.style[j] !== undefined) {
-                        var _n = parseFloat(getStyle(obj, j));
-                        _toVars[j] = _n;
-                        _fromVars[j] = calcValue(_n, fromVars[j]);
+                    var _name = checkCssName(obj, j);
+                    if (_name) {
+                        var _n = getStyle(obj, _name);
+                        _toVars[_name] = _n;
+                        _fromVars[_name] = calcValue(_n, fromVars[j]);
                     } else {
-                        _toVars[j] = fromVars[j];
+                        _toVars[_name] = fromVars[j];
                     }
                 }
 
@@ -431,12 +433,13 @@
                 var _toVars = {};
 
                 for (var j in toVars) {
-                    if (obj.style[j] !== undefined) {
-                        var _n = parseFloat(getStyle(obj, j));
-                        _fromVars[j] = _n;
-                        _toVars[j] = calcValue(_n, toVars[j]);
+                    var _name = checkCssName(obj, j);
+                    if (_name) {
+                        var _n = getStyle(obj, _name);
+                        _fromVars[_name] = _n;
+                        _toVars[_name] = calcValue(_n, toVars[j]);
                     } else {
-                        _toVars[j] = toVars[j];
+                        _toVars[_name] = toVars[j];
                     }
                 }
 
