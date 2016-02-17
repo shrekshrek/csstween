@@ -111,7 +111,7 @@
         name = browserPrefix(name);
         if (target.style[name] !== undefined) return name;
 
-        return null;
+        return undefined;
     }
 
     function calcValue(value, value2) {
@@ -144,9 +144,9 @@
     }
 
     function getStyle(target, name) {
-        if(target.style[name]){
-            return target.style[name];
-        }else
+        //if (target.style[name]) {
+        //    return target.style[name];
+        //} else
         if (document.defaultView && document.defaultView.getComputedStyle) {
             var _p = hyphenize(name);
             var _s = document.defaultView.getComputedStyle(target, '');
