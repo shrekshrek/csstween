@@ -220,8 +220,8 @@
         var _txt1 = '0%{';
         var _txt2 = '100%{';
         for (var i in fromVars) {
-            _txt1 += hyphenize(browserPrefix(i)) + ':' + checkCssValue(i, fromVars[i]) + ';';
-            _txt2 += hyphenize(browserPrefix(i)) + ':' + checkCssValue(i, toVars[i]) + ';';
+            _txt1 += hyphenize(i) + ':' + checkCssValue(i, fromVars[i]) + ';';
+            _txt2 += hyphenize(i) + ':' + checkCssValue(i, toVars[i]) + ';';
         }
         _txt1 += '}';
         _txt2 += '}';
