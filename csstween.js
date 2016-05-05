@@ -160,7 +160,7 @@
 
     function setStyle(target, params) {
         for (var i in params) {
-            target.style[i] = params[i];
+            if(target.style[i] != undefined) target.style[i] = checkCssValue(i, params[i]);
         }
     }
 
@@ -300,7 +300,7 @@
                 requestFrame(function () {
                     requestFrame(function () {
                         _self.target.style[browserPrefix('Transition')] = 'all ' + _self.duration + 's ' + _self.ease + ' ' + _self.delay + 's';
-                        setStyle(_self.target, _self.toVars);
+                        setStyle(_self.target, _self.toVars);console.log(_self.target, _self.toVars);
                     });
                 });
             }
