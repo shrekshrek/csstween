@@ -27,13 +27,13 @@ param为字符串，
 Params为数组，  
 
 以下是所有配置属性:  
-type设置为'a'则使用animation
+type设置为'a'则使用animation,  
 ease设置缓动，  
 delay设置延时时间，  
 onEnd设置运动完成的返回函数，  
 onEndParams设置返回函数的参数，  
 
-只有当type:'a'时以下属性才能起作用
+只有当type:'a'时以下属性才能起作用  
 repeat设置重复次数，  
 yoyo设置重复时反向，  
 onStart设置运动开始的返回函数，  
