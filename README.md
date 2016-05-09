@@ -6,6 +6,11 @@ css tween
 不过因为所有实现均基于css3，所以不能像tweenmax那样使用到其他对象，只能作用于dom对象的css属性（可以查阅animation和transition可使用的css属性）。
 
 
+demo:  
+http://shrek.imdevsh.com/demo/performance/test1/csstween.html  
+http://shrek.imdevsh.com/demo/performance/test2/csstween.html  
+
+
 API
 ============
 
@@ -27,7 +32,7 @@ param为字符串，
 Params为数组，  
 
 以下是所有配置属性:  
-type设置为'a'则使用animation,  
+type设置为'a'使用animation,不设置则使用transition(transiton动画的创建效率高于animation,但没有animation那样丰富的功能和回调)  
 ease设置缓动，  
 delay设置延时时间，  
 onEnd设置运动完成的返回函数，  
