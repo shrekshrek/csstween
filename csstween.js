@@ -1,26 +1,23 @@
 /*!
  * VERSION: 0.6.0
  * DATE: 2015-12-31
- * GIT:https://github.com/shrekshrek/csstween
- *
- * @author: Shrek.wang, shrekshrek@gmail.com
+ * GIT: https://github.com/shrekshrek/csstween
+ * @author: Shrek.wang
  **/
 
 (function (factory) {
-    var root = (typeof self == 'object' && self.self == self && self) ||
-        (typeof global == 'object' && global.global == global && global);
 
     if (typeof define === 'function' && define.amd) {
-        define(['exports'], function (exports) {
-            root.CT = factory(root, exports);
+        define(['exports'], function(exports) {
+            window.CT = factory(exports);
         });
     } else if (typeof exports !== 'undefined') {
-        factory(root, exports);
+        factory(exports);
     } else {
-        root.CT = factory(root, {});
+        window.CT = factory({});
     }
 
-}(function (root, CT) {
+}(function (CT) {
     // --------------------------------------------------------------------辅助方法
     function extend(obj, obj2) {
         for (var prop in obj2) {
